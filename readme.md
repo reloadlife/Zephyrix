@@ -1,6 +1,7 @@
 # Zephyrix
 
-> [!WARNING] > **This project is currently under development.**
+> [!IMPORTANT]
+> **This project is currently under development.**
 > use it in production at your own risk.
 
 Zephyrix is a high-performance, feature-rich web framework for Go, designed to make backend development a breeze.
