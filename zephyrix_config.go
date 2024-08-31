@@ -11,8 +11,9 @@ import (
 var configFilePath string = "zephyrix.yaml"
 
 type Config struct {
-	Log    LogConfig    `mapstructure:"log"`
-	Server ServerConfig `mapstructure:"server"`
+	Log      LogConfig      `mapstructure:"log"`
+	Server   ServerConfig   `mapstructure:"server"`
+	Database DatabaseConfig `mapstructure:"database"`
 }
 
 func (z *zephyrix) initConfig() {

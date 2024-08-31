@@ -20,7 +20,8 @@ type zephyrix struct {
 	fxStarted atomic.Bool
 	options   []fx.Option
 
-	c context.Context
+	c  context.Context
+	db *beeormEngine
 }
 
 // Zephyrix is the interface that users will see outside of the package
@@ -47,4 +48,7 @@ type Zephyrix interface {
 	// or if something goes wrong during cleanup
 	// It will return nil if the server is stopped, and cleaned up successfully.
 	Cleanup() error
+
+	// Database will return the Database interface
+	Database() Database
 }

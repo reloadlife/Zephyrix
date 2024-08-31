@@ -8,23 +8,28 @@ server:
 database:
   # for now, it uses BeeORM under the hood.
   # and due to that, only MySQL, redis / dragonfly are supported.
+  pools:
+    - name: "default"
+      dsn: "root:password@tcp(mysql:3306)/zephyrix?charset=utf8mb4&parseTime=True&loc=Local"
+      max_open_conns: 100
+      max_idle_conns: 10
+      conn_max_lifetime: "1h"
+      unsafe_auto_migrate: false
+      default_encoding: "utf8mb4"
+      default_collation: "utf8mb4_unicode_ci"
+      ignored_tables:
+        - "migrations"
+      cache:
+        enabled: true
+        size: 10000
+      redis:
+        enabled: true
+        address: "redis:6379"
+        password: ""
+        username: ""
+        db: 0
 
-  driver: "mysql" # only mysql is supported for now.
-
-  # MySQL connection string.
-  dsn: "root:password@tcp(mysql:3306)/zephyrix?charset=utf8mb4&parseTime=True&loc=Local"
-
-  # this will migrate the db if schema doesn't match with the one on the server.
-  # only use this in development. or if you know what you're doing.
-  unsafeautomigrate: false
-
-  cache:
-    enabled: true # uses LRU cache
-    size: 10000
-
-  redis:
-    enabled: true
-    address: "redis:6379"
-    password: ""
-    db: 0
-    pool_size: 1000
+  # you need to code for it, but you can also register it here for Double validation.
+  entities:
+    User:
+      ID: "uint64"

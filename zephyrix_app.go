@@ -33,9 +33,6 @@ func NewApplication() Zephyrix {
 		Use:   "zephyrix",
 		Short: "Zephyrix is a web framework",
 		Long:  "Zephyrix is a web framework, https://github.com/reloadlife/zephyrix",
-		PersistentPostRun: func(_ *cobra.Command, _ []string) {
-			defer cancel()
-		},
 		Run: func(cmd *cobra.Command, args []string) {
 			err := cmd.Help()
 			if err != nil {
@@ -63,14 +60,17 @@ func NewApplication() Zephyrix {
 	z.options = append(z.options, fx.Provide(func() *Config {
 		return z.config
 	}))
-
 	z.options = append(z.options, fx.Provide(func() *zephyrix {
 		return z
 	}))
 
 	// provide the http server but never invoke it here
 	z.options = append(z.options, fx.Provide(httpProvider))
-	z.options = append(z.options, fx.Provide(beeormProvider))
+
+	z.db = beeormProvider(z.config)
+	z.options = append(z.options, fx.Provide(func() *beeormEngine {
+		return z.db
+	}))
 
 	// HTTP SERVER COMMANDS
 
@@ -80,7 +80,7 @@ func NewApplication() Zephyrix {
 		Short:   "Start the Zephyrix server",
 		Long:    "Start the Zephyrix server, web server",
 		PersistentPreRun: func(_ *cobra.Command, _ []string) {
-			z.options = append(z.options, fx.Provide(beeormInvoke))
+			z.options = append(z.options, fx.Invoke(beeormInvoke))
 		},
 		RunE: z.serveRun,
 	}
@@ -92,8 +92,11 @@ func NewApplication() Zephyrix {
 		Use:     "migrate",
 		Short:   "Run database migrations",
 		Long:    "Run database migrations, to match the schema with the models, this will create tables, columns, indexes, etc., and will DROP any existing tables that doesnt match the schema",
+		PersistentPostRun: func(_ *cobra.Command, _ []string) {
+			defer cancel()
+		},
 		PersistentPreRun: func(_ *cobra.Command, _ []string) {
-			z.options = append(z.options, fx.Provide(beeormInvoke))
+			z.options = append(z.options, fx.Invoke(beeormInvoke))
 		},
 		RunE: z.migrationRun,
 	}

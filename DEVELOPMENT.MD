@@ -8,17 +8,19 @@ This document outlines the comprehensive development roadmap for the Zephyrix ba
 > they're not fully tested or functonal, but they've been implemented and work fine.
 
 - [x] Cobra CLI integration (globally)
+- [x] Configuration Management using `viper`
 - [x] Logger integration [`zephyrix.Logger`](zephyrix_logger.go#Logger) is usable and is of type [`zephyrix.ZephyrixLogger`](zephyrix_logger.go#ZephyrixLogger)
 - [x] a working HTTP Server using `gin-gonic` as the underlying engine
+- [x] Dependency Injection using [`fx`](https://github.com/uber-go/fx) as the underlying DI container. (might be replaced with [`wire`](https://github.com/google/wire) in the future)
 - [ ] 
 
 ## Core Features
 
-- [ ] HTTP Server
+- [x] HTTP Server
 
-  - [ ] Request handling
-  - [ ] Response generation
-  - [ ] HTTPS support
+  - [x] Request handling using `gin-gonic`
+  - [x] Response generation using `gin-gonic`
+  - [x] HTTPS support
 
 - [ ] Routing
 
@@ -113,10 +115,10 @@ This document outlines the comprehensive development roadmap for the Zephyrix ba
   - [ ] Request throttling
   - [ ] Custom rate limit rules
 
-- [ ] Dependency Injection
+- [x] Dependency Injection
 
-  - [ ] Service container
-  - [ ] Lifecycle management
+  - [x] Service container
+  - [x] Lifecycle management
 
 - [ ] Background Job Processing
 
@@ -200,7 +202,7 @@ This document outlines the comprehensive development roadmap for the Zephyrix ba
 
 - [ ] Containerization Support
 
-  - [ ] Docker integration
+  - [x] Docker integration
   - [ ] Kubernetes deployment helpers
 
 - [ ] Event Sourcing and CQRS
