@@ -7,8 +7,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
+	// "github.com/testcontainers/testcontainers-go"
+	// "github.com/testcontainers/testcontainers-go/wait"
 	"go.mamad.dev/zephyrix"
 )
 
@@ -22,57 +22,57 @@ import (
 var testApp zephyrix.Zephyrix
 var ctx context.Context
 
-func setupRedis() (testcontainers.Container, error) {
-	req := testcontainers.ContainerRequest{
-		Image:        "redis:latest",
-		ExposedPorts: []string{"6379/tcp"},
-		WaitingFor:   wait.ForLog("Ready to accept connections"),
-	}
-	return testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
-	})
-}
+// func setupRedis() (testcontainers.Container, error) {
+// 	req := testcontainers.ContainerRequest{
+// 		Image:        "redis:latest",
+// 		ExposedPorts: []string{"6379/tcp"},
+// 		WaitingFor:   wait.ForLog("Ready to accept connections"),
+// 	}
+// 	return testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+// 		ContainerRequest: req,
+// 		Started:          true,
+// 	})
+// }
 
-func setupMySQL() (testcontainers.Container, error) {
-	req := testcontainers.ContainerRequest{
-		Image:        "mysql:latest",
-		ExposedPorts: []string{"3306/tcp"},
-		Env: map[string]string{
-			"MYSQL_ROOT_PASSWORD": "password",
-			"MYSQL_DATABASE":      "testdb",
-		},
-		WaitingFor: wait.ForLog("MySQL init process done. Ready for start up."),
-	}
-	return testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
-	})
-}
+// func setupMySQL() (testcontainers.Container, error) {
+// 	req := testcontainers.ContainerRequest{
+// 		Image:        "mysql:latest",
+// 		ExposedPorts: []string{"3306/tcp"},
+// 		Env: map[string]string{
+// 			"MYSQL_ROOT_PASSWORD": "password",
+// 			"MYSQL_DATABASE":      "testdb",
+// 		},
+// 		WaitingFor: wait.ForLog("MySQL init process done. Ready for start up."),
+// 	}
+// 	return testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+// 		ContainerRequest: req,
+// 		Started:          true,
+// 	})
+// }
 
-func setupMongoDB() (testcontainers.Container, error) {
-	req := testcontainers.ContainerRequest{
-		Image:        "mongo:latest",
-		ExposedPorts: []string{"27017/tcp"},
-		WaitingFor:   wait.ForLog("Waiting for connections"),
-	}
-	return testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
-	})
-}
+// func setupMongoDB() (testcontainers.Container, error) {
+// 	req := testcontainers.ContainerRequest{
+// 		Image:        "mongo:latest",
+// 		ExposedPorts: []string{"27017/tcp"},
+// 		WaitingFor:   wait.ForLog("Waiting for connections"),
+// 	}
+// 	return testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+// 		ContainerRequest: req,
+// 		Started:          true,
+// 	})
+// }
 
-func setupZephyrixServer() (testcontainers.Container, error) {
-	req := testcontainers.ContainerRequest{
-		Image:        "zephyrix:latest", // Assuming you have a Docker image for Zephyrix
-		ExposedPorts: []string{"8080/tcp"},
-		WaitingFor:   wait.ForHTTP("/health").WithPort("8080/tcp"),
-	}
-	return testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
-	})
-}
+// func setupZephyrixServer() (testcontainers.Container, error) {
+// 	req := testcontainers.ContainerRequest{
+// 		Image:        "zephyrix:latest", // Assuming you have a Docker image for Zephyrix
+// 		ExposedPorts: []string{"8080/tcp"},
+// 		WaitingFor:   wait.ForHTTP("/health").WithPort("8080/tcp"),
+// 	}
+// 	return testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+// 		ContainerRequest: req,
+// 		Started:          true,
+// 	})
+// }
 
 // TestMain is the entry point for the tests
 // we will be initializing the testApp here
@@ -125,8 +125,7 @@ func TestMain(m *testing.M) {
 	// zephyrixPort, _ := zephyrixC.MappedPort(ctx, "8080")
 
 	// Initialize testApp with the configurations
-	config := zephyrix.Config{}
-	testApp = zephyrix.NewApplication(&config)
+	testApp = zephyrix.NewApplication()
 
 	// Run the tests
 	exitCode := m.Run()
@@ -138,13 +137,4 @@ func TestMain(m *testing.M) {
 
 	// Exit with the status code from the test run
 	os.Exit(exitCode)
-}
-
-// Add your test functions here
-func TestSomething(t *testing.T) {
-	// Your test code here
-}
-
-func TestEdgeCase(t *testing.T) {
-	// Test using the Zephyrix server running in a container
 }

@@ -1,6 +1,27 @@
 package zephyrix
 
-import "context"
+import (
+	"context"
+	"sync/atomic"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"go.uber.org/fx"
+)
+
+type zephyrix struct {
+	cobraInstance *cobra.Command
+	config        *Config
+	viper         *viper.Viper
+
+	// Zephyrix FX (uber-fx)
+	// this will be using the uber-go/fx under the hood.
+	fx        *fx.App
+	fxStarted atomic.Bool
+	options   []fx.Option
+
+	c context.Context
+}
 
 // Zephyrix is the interface that users will see outside of the package
 // it might not be wise, to expose an interface, but will see in test phases
@@ -26,11 +47,4 @@ type Zephyrix interface {
 	// or if something goes wrong during cleanup
 	// It will return nil if the server is stopped, and cleaned up successfully.
 	Cleanup() error
-}
-
-type zephyrix struct {
-}
-
-func NewApplication(config *Config) Zephyrix {
-	return &zephyrix{}
 }

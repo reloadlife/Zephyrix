@@ -2,6 +2,16 @@
 
 This document outlines the comprehensive development roadmap for the Zephyrix backend web framework. Below is a list of features to be implemented over time, along with their current status.
 
+## thigs that are working (implemented features)
+
+> here is a list of things that are implemented, and working in the Zephyrix web framework.
+> they're not fully tested or functonal, but they've been implemented and work fine.
+
+- [x] Cobra CLI integration (globally)
+- [x] Logger integration [`zephyrix.Logger`](zephyrix_logger.go#Logger) is usable and is of type [`zephyrix.ZephyrixLogger`](zephyrix_logger.go#ZephyrixLogger)
+- [x] a working HTTP Server using `gin-gonic` as the underlying engine
+- [ ] 
+
 ## Core Features
 
 - [ ] HTTP Server
