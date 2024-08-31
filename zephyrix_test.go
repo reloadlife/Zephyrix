@@ -7,8 +7,8 @@ import (
 	"context"
 	"log"
 
-	// "github.com/testcontainers/testcontainers-go"
-	// "github.com/testcontainers/testcontainers-go/wait"
+	"github.com/testcontainers/testcontainers-go"
+	"github.com/testcontainers/testcontainers-go/wait"
 	"go.mamad.dev/zephyrix"
 )
 
@@ -22,57 +22,33 @@ import (
 var testApp zephyrix.Zephyrix
 var ctx context.Context
 
-// func setupRedis() (testcontainers.Container, error) {
-// 	req := testcontainers.ContainerRequest{
-// 		Image:        "redis:latest",
-// 		ExposedPorts: []string{"6379/tcp"},
-// 		WaitingFor:   wait.ForLog("Ready to accept connections"),
-// 	}
-// 	return testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-// 		ContainerRequest: req,
-// 		Started:          true,
-// 	})
-// }
+func setupRedis() (testcontainers.Container, error) {
+	req := testcontainers.ContainerRequest{
+		Image:        "redis:latest",
+		ExposedPorts: []string{"6379/tcp"},
+		WaitingFor:   wait.ForLog("Ready to accept connections"),
+	}
+	return testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+		ContainerRequest: req,
+		Started:          true,
+	})
+}
 
-// func setupMySQL() (testcontainers.Container, error) {
-// 	req := testcontainers.ContainerRequest{
-// 		Image:        "mysql:latest",
-// 		ExposedPorts: []string{"3306/tcp"},
-// 		Env: map[string]string{
-// 			"MYSQL_ROOT_PASSWORD": "password",
-// 			"MYSQL_DATABASE":      "testdb",
-// 		},
-// 		WaitingFor: wait.ForLog("MySQL init process done. Ready for start up."),
-// 	}
-// 	return testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-// 		ContainerRequest: req,
-// 		Started:          true,
-// 	})
-// }
-
-// func setupMongoDB() (testcontainers.Container, error) {
-// 	req := testcontainers.ContainerRequest{
-// 		Image:        "mongo:latest",
-// 		ExposedPorts: []string{"27017/tcp"},
-// 		WaitingFor:   wait.ForLog("Waiting for connections"),
-// 	}
-// 	return testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-// 		ContainerRequest: req,
-// 		Started:          true,
-// 	})
-// }
-
-// func setupZephyrixServer() (testcontainers.Container, error) {
-// 	req := testcontainers.ContainerRequest{
-// 		Image:        "zephyrix:latest", // Assuming you have a Docker image for Zephyrix
-// 		ExposedPorts: []string{"8080/tcp"},
-// 		WaitingFor:   wait.ForHTTP("/health").WithPort("8080/tcp"),
-// 	}
-// 	return testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-// 		ContainerRequest: req,
-// 		Started:          true,
-// 	})
-// }
+func setupMySQL() (testcontainers.Container, error) {
+	req := testcontainers.ContainerRequest{
+		Image:        "mysql:latest",
+		ExposedPorts: []string{"3306/tcp"},
+		Env: map[string]string{
+			"MYSQL_ROOT_PASSWORD": "password",
+			"MYSQL_DATABASE":      "testdb",
+		},
+		WaitingFor: wait.ForLog("MySQL init process done. Ready for start up."),
+	}
+	return testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+		ContainerRequest: req,
+		Started:          true,
+	})
+}
 
 // TestMain is the entry point for the tests
 // we will be initializing the testApp here
@@ -86,43 +62,43 @@ var ctx context.Context
 func TestMain(m *testing.M) {
 	ctx = context.Background()
 
-	// Initialize test containers
-
-	// we wont be using these services for now
-
-	// redisC, err := setupRedis()
-	// if err != nil {
-	// 	log.Fatalf("Failed to start Redis: %s", err)
-	// }
-	// defer redisC.Terminate(ctx)
-
-	// mysqlC, err := setupMySQL()
-	// if err != nil {
-	// 	log.Fatalf("Failed to start MySQL: %s", err)
-	// }
-	// defer mysqlC.Terminate(ctx)
-
-	// mongoC, err := setupMongoDB()
-	// if err != nil {
-	// 	log.Fatalf("Failed to start MongoDB: %s", err)
-	// }
-	// defer mongoC.Terminate(ctx)
-
-	// zephyrixC, err := setupZephyrixServer()
-	// if err != nil {
-	// 	log.Fatalf("Failed to start Zephyrix server: %s", err)
-	// }
-	// defer zephyrixC.Terminate(ctx)
+	redisC, err := setupRedis()
+	if err != nil {
+		log.Fatalf("Failed to start Redis: %s", err)
+	}
+	mysqlC, err := setupMySQL()
+	if err != nil {
+		log.Fatalf("Failed to start MySQL: %s", err)
+	}
 
 	// Get the connection details for each service
-	// redisHost, _ := redisC.Host(ctx)
-	// redisPort, _ := redisC.MappedPort(ctx, "6379")
-	// mysqlHost, _ := mysqlC.Host(ctx)
-	// mysqlPort, _ := mysqlC.MappedPort(ctx, "3306")
-	// mongoHost, _ := mongoC.Host(ctx)
-	// mongoPort, _ := mongoC.MappedPort(ctx, "27017")
-	// zephyrixHost, _ := zephyrixC.Host(ctx)
-	// zephyrixPort, _ := zephyrixC.MappedPort(ctx, "8080")
+	redisHost, _ := redisC.Host(ctx)
+	redisPort, _ := redisC.MappedPort(ctx, "6379")
+	mysqlHost, _ := mysqlC.Host(ctx)
+	mysqlPort, _ := mysqlC.MappedPort(ctx, "3306")
+
+	// Set the configurations for the testApp
+	zephyrix.TestConfig = &zephyrix.Config{
+		Database: zephyrix.DatabaseConfig{
+			Pools: []zephyrix.DatabasePoolConfig{
+				{
+					Name: "default",
+					DSN:  "root:password@tcp(" + mysqlHost + ":" + mysqlPort.Port() + ")/testdb",
+					Cache: zephyrix.CacheConfig{
+						Enabled: true,
+						Size:    100,
+					},
+					Redis: zephyrix.RedisConfig{
+						Enabled:  true,
+						Address:  redisHost + ":" + redisPort.Port(),
+						Username: "",
+						Password: "",
+						DB:       0,
+					},
+				},
+			},
+		},
+	}
 
 	// Initialize testApp with the configurations
 	testApp = zephyrix.NewApplication()
@@ -131,10 +107,18 @@ func TestMain(m *testing.M) {
 	exitCode := m.Run()
 
 	// Clean up
-	if err := testApp.Cleanup(); err != nil {
+	if err := testApp.Stop(); err != nil {
 		log.Printf("Error during cleanup: %s", err)
 	}
 
+	err = redisC.Terminate(ctx)
+	if err != nil {
+		log.Printf("Error during cleanup (failed to kill redis): %s (%s)", err, redisC.GetContainerID())
+	}
+	err = mysqlC.Terminate(ctx)
+	if err != nil {
+		log.Printf("Error during cleanup (failed to kill mysql): %s (%s)", err, mysqlC.GetContainerID())
+	}
 	// Exit with the status code from the test run
 	os.Exit(exitCode)
 }

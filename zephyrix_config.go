@@ -9,6 +9,7 @@ import (
 )
 
 var configFilePath string = "zephyrix.yaml"
+var TestConfig *Config = nil
 
 type Config struct {
 	Log      LogConfig      `mapstructure:"log"`
@@ -17,29 +18,36 @@ type Config struct {
 }
 
 func (z *zephyrix) initConfig() {
-	if configFilePath != "" {
-		z.viper.SetConfigFile(configFilePath)
-	} else {
-		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
-
-		z.viper.AddConfigPath(home)
-		z.viper.AddConfigPath(".")
-		z.viper.SetConfigName("zephyrix")
+	if TestConfig != nil {
+		z.config = TestConfig
+		z.config.Log.Level = "debug" // set log level to debug for tests
 	}
 
-	z.viper.SetEnvPrefix("ZEPHYRIX")
-	z.viper.AutomaticEnv()
-	z.viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	if TestConfig == nil {
+		if configFilePath != "" {
+			z.viper.SetConfigFile(configFilePath)
+		} else {
+			home, err := os.UserHomeDir()
+			cobra.CheckErr(err)
 
-	if err := z.viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			Logger.Fatal("Error reading config file: %s", err)
+			z.viper.AddConfigPath(home)
+			z.viper.AddConfigPath(".")
+			z.viper.SetConfigName("zephyrix")
 		}
-	}
 
-	if err := z.viper.Unmarshal(z.config); err != nil {
-		Logger.Fatal("Unable to decode config into struct: %s", err)
+		z.viper.SetEnvPrefix("ZEPHYRIX")
+		z.viper.AutomaticEnv()
+		z.viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+		if err := z.viper.ReadInConfig(); err != nil {
+			if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+				Logger.Fatal("Error reading config file: %s", err)
+			}
+		}
+
+		if err := z.viper.Unmarshal(z.config); err != nil {
+			Logger.Fatal("Unable to decode config into struct: %s", err)
+		}
 	}
 
 	cobra.CheckErr(z.setupLogger())

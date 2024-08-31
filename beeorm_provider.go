@@ -53,6 +53,16 @@ func beeormProvider(conf *Config) *beeormEngine {
 
 	r := beeorm.NewRegistry()
 	for _, pool := range config.Pools {
+		if pool.MaxOpenConns == 0 {
+			pool.MaxOpenConns = 10
+		}
+		if pool.MaxIdleConns == 0 {
+			pool.MaxIdleConns = 5
+		}
+		if pool.ConnMaxLifetime == "" {
+			pool.ConnMaxLifetime = "30m"
+		}
+
 		maxLifeTime, _ := time.ParseDuration(pool.ConnMaxLifetime)
 		r.RegisterMySQL(pool.DSN, pool.Name, &beeorm.MySQLOptions{
 			MaxOpenConnections: pool.MaxOpenConns,
