@@ -1,7 +1,6 @@
 package zephyrix
 
 import (
-	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 )
 
@@ -10,7 +9,7 @@ type ZephyrixRouteHandlers []ZephyrixRouteHandler
 type ZephyrixRouteHandler interface {
 	Method() []string
 	Path() string
-	Handlers() []gin.HandlerFunc
+	Handlers() []any
 }
 
 func asRoute(f any) any {

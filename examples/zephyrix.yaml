@@ -4,6 +4,19 @@ log:
 
 server:
   address: ":8000"
+  skip_log_path:
+    - "/health"
+    - "/metrics"
+  max_multipart_memory: 32000000 # 32MB
+
+  cors:
+    enabled: true
+    allowed_origins: ["*"]
+    allowed_methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allowed_headers: ["*"]
+    exposed_headers: ["*"]
+    allow_credentials: true
+    max_age: 12h
 
 database:
   # for now, it uses BeeORM under the hood.

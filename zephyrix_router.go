@@ -1,10 +1,6 @@
 package zephyrix
 
 import (
-	"fmt"
-	"reflect"
-	"runtime"
-
 	"github.com/gin-gonic/gin"
 	"go.uber.org/fx"
 )
@@ -109,20 +105,6 @@ func (z *zephyrixRouter) Group(g func(router Router), options ...any) {
 	})
 }
 
-func convertToGinHandlerFunc(handlerFunc any) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		handlerValue := reflect.ValueOf(handlerFunc)
-		handlerType := handlerValue.Type()
-
-		if handlerType.NumIn() != 1 || handlerType.In(0) != reflect.TypeOf(&gin.Context{}) {
-			panic(fmt.Sprintf("Invalid handler function signature for %s. Expected func(*gin.Context)", runtime.FuncForPC(handlerValue.Pointer()).Name()))
-		}
-
-		args := []reflect.Value{reflect.ValueOf(c)}
-		handlerValue.Call(args)
-	}
-}
-
 func (z *zephyrixRouter) handleHTTPMethod(httpMethod HTTPVerb, relativePath string, handlerFunction any, middlewareFunctions ...any) {
 	ginHandlerFunc := convertToGinHandlerFunc(handlerFunction)
 	middlewares := convertMiddlewares(middlewareFunctions...)
@@ -133,18 +115,6 @@ func (z *zephyrixRouter) handleHTTPMethod(httpMethod HTTPVerb, relativePath stri
 			z.handler.Handle(string(httpMethod), relativePath, append(middlewares, ginHandlerFunc)...)
 		}
 	})
-}
-
-func convertMiddlewares(middlewares ...any) []gin.HandlerFunc {
-	ginMiddlewares := make([]gin.HandlerFunc, 0, len(middlewares))
-	for _, middleware := range middlewares {
-		if ginMiddleware, ok := middleware.(gin.HandlerFunc); ok {
-			ginMiddlewares = append(ginMiddlewares, ginMiddleware)
-		} else {
-			ginMiddlewares = append(ginMiddlewares, convertToGinHandlerFunc(middleware))
-		}
-	}
-	return ginMiddlewares
 }
 
 func (z *zephyrixRouter) GET(relativePath string, handlerFunction any, middlewareFunctions ...any) {

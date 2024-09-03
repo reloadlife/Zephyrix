@@ -71,6 +71,7 @@ func NewApplication() Zephyrix {
 			router,
 			fx.ParamTags(`group:"zephyrix_router_http_fx"`),
 		)),
+		
 	)
 
 	z.db = beeormProvider()

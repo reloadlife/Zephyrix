@@ -30,9 +30,13 @@ func (r *routeHandler) Path() string {
 	return "/hello_world_di"
 }
 
-func (r *routeHandler) Handlers() []gin.HandlerFunc {
-	return []gin.HandlerFunc{
+func (r *routeHandler) Handlers() []any {
+	return []any{
 		func(c *gin.Context) {
+			// response
+			c.JSON(200, r.conf) // todo: implement JSON method
+		},
+		func(c zephyrix.Context) {
 			// response
 			c.JSON(200, r.conf) // todo: implement JSON method
 		},
@@ -53,9 +57,8 @@ func main() {
 	app.Database().RegisterEntity(&User{})
 	app.RegisterRouteHandler(newRouteHandler)
 
-	
-	app.Router().Group(func(router zephyrix.Router) {
 
+	app.Router().Group(func(router zephyrix.Router) {
 		router.GET("/", func(c *gin.Context) {
 			// response
 			c.JSON(200, "Hello, World!") // todo: implement JSON method

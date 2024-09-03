@@ -13,6 +13,10 @@ type ServerConfig struct {
 	TLSAddress  string `mapstructure:"tls_address"`
 
 	TrustedProxies []string `mapstructure:"trusted_proxies"`
+
+	Cors               CorsConfig `mapstructure:"cors"`
+	SkipLogPaths       []string   `mapstructure:"skip_log_path"`
+	MaxMultipartMemory int64      `mapstructure:"max_multipart_memory"` // todo: make this string and add unit suffixes (parse them)
 }
 
 func (z *zephyrix) serveRun(_ *cobra.Command, _ []string) error {

@@ -14,7 +14,7 @@ This document outlines the comprehensive development roadmap for the Zephyrix ba
 - [x] Dependency Injection using [`fx`](https://github.com/uber-go/fx) as the underlying DI container. (might be replaced with [`wire`](https://github.com/google/wire) in the future)
 - [x] Beeorm implementation for ORM and database management (Should be replaced with a custom ORM in the future)
 - [x] Dependency Injected Router / Route Manager
-- [ ] 
+- [x] Custom context support in routes (WIP: supports the context, but the context is not yet fully functional)
 
 ## Core Features
 
