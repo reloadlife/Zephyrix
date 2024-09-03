@@ -65,12 +65,19 @@ func NewApplication() Zephyrix {
 	}))
 
 	// provide the http server but never invoke it here
-	z.options = append(z.options, fx.Provide(httpProvider))
+	z.options = append(z.options, fx.Provide(
+		httpProvider,
+		fx.Annotate(
+			router,
+			fx.ParamTags(`group:"zephyrix_router_http_fx"`),
+		)),
+	)
 
-	z.db = beeormProvider(z.config)
+	z.db = beeormProvider()
 	z.options = append(z.options, fx.Provide(func() *beeormEngine {
 		return z.db
 	}))
+	
 
 	// HTTP SERVER COMMANDS
 
@@ -100,6 +107,7 @@ func NewApplication() Zephyrix {
 		},
 		RunE: z.migrationRun,
 	}
+	migrateCommand.PersistentFlags().BoolVarP(&runUnsafeMigrations, "unsafe-migrations", "f", false, "Run unsafe migrations")
 	cobraInstance.AddCommand(migrateCommand)
 	return z
 }

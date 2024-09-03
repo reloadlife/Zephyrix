@@ -10,7 +10,7 @@ database:
   # and due to that, only MySQL, redis / dragonfly are supported.
   pools:
     - name: "default"
-      dsn: "root:password@tcp(mysql:3306)/zephyrix?charset=utf8mb4&parseTime=True&loc=Local"
+      dsn: "root:password@tcp(127.0.0.1:3306)/zephyrix?charset=utf8mb4&parseTime=True&loc=Local"
       max_open_conns: 100
       max_idle_conns: 10
       conn_max_lifetime: "1h"
@@ -24,12 +24,7 @@ database:
         size: 10000
       redis:
         enabled: true
-        address: "redis:6379"
+        address: "127.0.0.1:6379"
         password: ""
         username: ""
         db: 0
-
-  # you need to code for it, but you can also register it here for Double validation.
-  entities:
-    User:
-      ID: "uint64"

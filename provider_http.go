@@ -15,6 +15,9 @@ type zephyrixServer struct {
 
 	errChannel chan error
 	config     *ServerConfig
+	z          *zephyrix
+
+	diInjectedHandlers *ZephyrixRouteHandlers
 }
 
 func httpProvider(config *Config, z *zephyrix) (*zephyrixServer, error) {
@@ -22,7 +25,6 @@ func httpProvider(config *Config, z *zephyrix) (*zephyrixServer, error) {
 	server := &zephyrixServer{
 		httpServer: &http.Server{
 			Addr:         conf.Address,
-			Handler:      z.setupHandler(),
 			ReadTimeout:  5 * time.Second,
 			WriteTimeout: 10 * time.Second,
 			IdleTimeout:  120 * time.Second,
@@ -30,12 +32,12 @@ func httpProvider(config *Config, z *zephyrix) (*zephyrixServer, error) {
 
 		errChannel: make(chan error, 2),
 		config:     &conf,
+		z:          z,
 	}
 
 	if conf.TLSEnabled {
 		server.httpsServer = &http.Server{
 			Addr:         conf.TLSAddress,
-			Handler:      z.setupHandler(),
 			ReadTimeout:  5 * time.Second,
 			WriteTimeout: 10 * time.Second,
 			IdleTimeout:  120 * time.Second,
@@ -45,12 +47,13 @@ func httpProvider(config *Config, z *zephyrix) (*zephyrixServer, error) {
 	return server, nil
 }
 
-func httpInvoke(lc fx.Lifecycle, config *Config, logger ZephyrixLogger, server *zephyrixServer, z *zephyrix) {
+func httpInvoke(lc fx.Lifecycle, config *Config, logger ZephyrixLogger, server *zephyrixServer, z *zephyrix, handlers *ZephyrixRouteHandlers) {
 	conf := config.Server
-
+	server.diInjectedHandlers = handlers
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			logger.Debug("Attempting to start Zephyrix Server (Web Server)")
+
 			go server.spawnServer("http")
 
 			if conf.TLSEnabled {
@@ -92,8 +95,12 @@ func (s *zephyrixServer) spawnServer(serverType string) {
 
 	switch serverType {
 	case "http":
+		s.httpServer.Handler = s.z.setupHandler(s.diInjectedHandlers)
+		s.z.r.execute()
 		err = s.httpServer.ListenAndServe()
 	case "https":
+		s.httpsServer.Handler = s.z.setupHandler(s.diInjectedHandlers)
+		s.z.r.execute()
 		err = s.httpsServer.ListenAndServeTLS(s.config.TLSCertFile, s.config.TLSKeyFile)
 
 	default:

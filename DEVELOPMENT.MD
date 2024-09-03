@@ -12,6 +12,8 @@ This document outlines the comprehensive development roadmap for the Zephyrix ba
 - [x] Logger integration [`zephyrix.Logger`](zephyrix_logger.go#Logger) is usable and is of type [`zephyrix.ZephyrixLogger`](zephyrix_logger.go#ZephyrixLogger)
 - [x] a working HTTP Server using `gin-gonic` as the underlying engine
 - [x] Dependency Injection using [`fx`](https://github.com/uber-go/fx) as the underlying DI container. (might be replaced with [`wire`](https://github.com/google/wire) in the future)
+- [x] Beeorm implementation for ORM and database management (Should be replaced with a custom ORM in the future)
+- [x] Dependency Injected Router / Route Manager
 - [ ] 
 
 ## Core Features

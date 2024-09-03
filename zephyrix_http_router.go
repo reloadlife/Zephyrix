@@ -8,17 +8,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (z *zephyrix) setupHandler() http.Handler {
+func (z *zephyrix) setupHandler(handlers *ZephyrixRouteHandlers) http.Handler {
 	if z.config.Log.Level == "debug" {
 		gin.SetMode(gin.DebugMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
-
 	handler := gin.New()
-
-	// Add custom middleware
-	handler.Use(gin.Recovery()) // Recover from panics
+	handler.Use(gin.Recovery())
 
 	// todo: custom logger here
 	handler.Use(gin.Logger()) // Log requests
@@ -40,11 +37,13 @@ func (z *zephyrix) setupHandler() http.Handler {
 		}
 	}
 
-	handler.GET("/", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{
-			"message": "Hello, World!",
-		})
-	})
+	z.assignHandler(handler)
+
+	Logger.Debug("Dependency Injected Routes: %d", len(*handlers))
+
+	for _, route := range *handlers {
+		handler.Match(route.Method(), route.Path(), route.Handlers()...)
+	}
 
 	return handler
 }

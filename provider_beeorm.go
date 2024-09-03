@@ -2,6 +2,7 @@ package zephyrix
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/latolukasz/beeorm/v3"
@@ -44,14 +45,48 @@ type beeormEngine struct {
 	r beeorm.Registry
 	e beeorm.Engine
 
+	models  map[string]interface{}
 	isDirty bool
 }
 
-func beeormProvider(conf *Config) *beeormEngine {
-	config := conf.Database
-	bee := beeormEngine{}
-
+func beeormProvider() *beeormEngine {
+	bee := beeormEngine{
+		models: make(map[string]interface{}),
+	}
 	r := beeorm.NewRegistry()
+	r.RegisterPlugin(modified.New("CreatedAt", "ModifiedAt"))
+	bee.r = r
+	bee.isDirty = true
+	return &bee
+}
+
+func (b *beeormEngine) RegisterEntity(entity ...interface{}) {
+	Logger.Debug("RegisterEntity %s %#v", "entity", entity)
+	for _, e := range entity {
+		b.models[fmt.Sprintf("%T", e)] = e
+	}
+	b.r.RegisterEntity(entity...)
+	b.isDirty = true
+}
+
+func (b *beeormEngine) GetEngine() beeorm.Engine {
+	if !b.isDirty {
+		return b.e
+	}
+	r := b.r
+	engine, err := r.Validate()
+	if err != nil {
+		Logger.Fatal("Failed to validate beeorm engine: %s", err)
+		return nil
+	}
+	b.e = engine
+	return engine
+}
+
+func beeormInvoke(lc fx.Lifecycle, bee *beeormEngine, conf *Config) {
+	r := bee.r
+
+	config := conf.Database
 	for _, pool := range config.Pools {
 		if pool.MaxOpenConns == 0 {
 			pool.MaxOpenConns = 10
@@ -82,35 +117,20 @@ func beeormProvider(conf *Config) *beeormEngine {
 			})
 		}
 	}
-	r.RegisterPlugin(modified.New("CreatedAt", "ModifiedAt"))
-	bee.r = r
-	return &bee
-}
 
-func (b *beeormEngine) RegisterEntity(entity ...interface{}) {
-	Logger.Debug("RegisterEntity %s %#v", "entity", entity)
-	b.r.RegisterEntity(entity...)
-	b.isDirty = true
-}
-
-func (b *beeormEngine) GetEngine() beeorm.Engine {
-	if !b.isDirty {
-		return b.e
+	engine := bee.GetEngine()
+	if engine == nil {
+		Logger.Fatal("Failed to get beeorm engine")
+		return
 	}
-	engine, err := b.r.Validate()
-	if err != nil {
-		Logger.Error("Failed to validate beeorm engine %s", err)
-	}
-	b.e = engine
-	return engine
-}
 
-func beeormInvoke(lc fx.Lifecycle, bee *beeormEngine, conf *Config) {
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go func() {
-				c := bee.GetEngine().NewORM(ctx)
+				c := engine.NewORM(context.Background())
+				c.SetMetaData("source", "flushed_by_zephyrix_consumer")
 				for {
+					Logger.Debug("Flusher is running")
 					flushError := beeorm.ConsumeAsyncFlushEvents(c, true)
 					if flushError != nil {
 						Logger.Error("Failed to flush database Events! %s", flushError)
