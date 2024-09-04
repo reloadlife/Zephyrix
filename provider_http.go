@@ -17,7 +17,8 @@ type zephyrixServer struct {
 	config     *ServerConfig
 	z          *zephyrix
 
-	diInjectedHandlers *ZephyrixRouteHandlers
+	diInjectedHandlers    *ZephyrixRouteHandlers
+	diInjectedMiddlewares *ZephyrixMiddlewares
 }
 
 func httpProvider(config *Config, z *zephyrix) (*zephyrixServer, error) {
@@ -47,9 +48,11 @@ func httpProvider(config *Config, z *zephyrix) (*zephyrixServer, error) {
 	return server, nil
 }
 
-func httpInvoke(lc fx.Lifecycle, config *Config, logger ZephyrixLogger, server *zephyrixServer, z *zephyrix, handlers *ZephyrixRouteHandlers) {
+func httpInvoke(lc fx.Lifecycle, config *Config, logger ZephyrixLogger, server *zephyrixServer, z *zephyrix, handlers *ZephyrixRouteHandlers, mw *ZephyrixMiddlewares) {
 	conf := config.Server
 	server.diInjectedHandlers = handlers
+	server.diInjectedMiddlewares = mw
+
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			logger.Debug("Attempting to start Zephyrix Server (Web Server)")
@@ -95,11 +98,11 @@ func (s *zephyrixServer) spawnServer(serverType string) {
 
 	switch serverType {
 	case "http":
-		s.httpServer.Handler = s.z.setupHandler(s.diInjectedHandlers)
+		s.httpServer.Handler = s.z.setupHandler(s.diInjectedHandlers, s.diInjectedMiddlewares)
 		s.z.r.execute()
 		err = s.httpServer.ListenAndServe()
 	case "https":
-		s.httpsServer.Handler = s.z.setupHandler(s.diInjectedHandlers)
+		s.httpsServer.Handler = s.z.setupHandler(s.diInjectedHandlers, s.diInjectedMiddlewares)
 		s.z.r.execute()
 		err = s.httpsServer.ListenAndServeTLS(s.config.TLSCertFile, s.config.TLSKeyFile)
 

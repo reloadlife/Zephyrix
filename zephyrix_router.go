@@ -106,8 +106,22 @@ func (z *zephyrixRouter) Group(g func(router Router), options ...any) {
 }
 
 func (z *zephyrixRouter) handleHTTPMethod(httpMethod HTTPVerb, relativePath string, handlerFunction any, middlewareFunctions ...any) {
-	ginHandlerFunc := convertToGinHandlerFunc(handlerFunction)
-	middlewares := convertMiddlewares(middlewareFunctions...)
+	ginHandlerFunc := z.z.convertToGinHandlerFunc(handlerFunction)
+
+	actualMiddlewares := make([]any, 0)
+	for _, middleware := range middlewareFunctions {
+		switch m := middleware.(type) {
+		case string:
+			// todo: implement custom middlewares from string
+			//   ? e.g: "auth:(some args)" example: "auth:jwt" or "auth:jwt,admin"
+			//   ? or "ratelimit:10:1m" (10 requests per minute)
+
+		default:
+			actualMiddlewares = append(actualMiddlewares, m)
+		}
+	}
+
+	middlewares := z.z.convertMiddlewares(actualMiddlewares...)
 	z.assign(func() {
 		if z.gHandler != nil {
 			z.gHandler.Handle(string(httpMethod), relativePath, append(middlewares, ginHandlerFunc)...)

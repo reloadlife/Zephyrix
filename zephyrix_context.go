@@ -7,12 +7,14 @@ type Context interface {
 }
 
 type zephyrixContext struct {
+	z          *zephyrix
 	ginContext *gin.Context
 }
 
-func newZephyrixContext(ginContext *gin.Context) *zephyrixContext {
+func (z *zephyrix) newZephyrixContext(ginContext *gin.Context) *zephyrixContext {
 	return &zephyrixContext{
 		ginContext: ginContext,
+		z:          z,
 	}
 }
 

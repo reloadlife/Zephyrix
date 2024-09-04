@@ -70,15 +70,17 @@ func NewApplication() Zephyrix {
 		fx.Annotate(
 			router,
 			fx.ParamTags(`group:"zephyrix_router_http_fx"`),
+		),
+		fx.Annotate(
+			mw,
+			fx.ParamTags(`group:"zephyrix_mw_http_fx"`),
 		)),
-		
 	)
 
 	z.db = beeormProvider()
 	z.options = append(z.options, fx.Provide(func() *beeormEngine {
 		return z.db
 	}))
-	
 
 	// HTTP SERVER COMMANDS
 

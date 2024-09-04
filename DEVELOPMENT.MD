@@ -12,30 +12,45 @@ This document outlines the comprehensive development roadmap for the Zephyrix ba
 - [x] Logger integration [`zephyrix.Logger`](zephyrix_logger.go#Logger) is usable and is of type [`zephyrix.ZephyrixLogger`](zephyrix_logger.go#ZephyrixLogger)
 - [x] a working HTTP Server using `gin-gonic` as the underlying engine
 - [x] Dependency Injection using [`fx`](https://github.com/uber-go/fx) as the underlying DI container. (might be replaced with [`wire`](https://github.com/google/wire) in the future)
+  - [x] Dependency Injection
+  - [x] Service container
+  - [x] Lifecycle management
 - [x] Beeorm implementation for ORM and database management (Should be replaced with a custom ORM in the future)
+  - [x] Database Integration
+  - [x] ORM or query builder
+  - [x] Connection pooling
+  - [x] Migration support
 - [x] Dependency Injected Router / Route Manager
 - [x] Custom context support in routes (WIP: supports the context, but the context is not yet fully functional)
+- [x] CORS handling -> handled by the `gin-gonic` engine (uses zephyrix configuration to easily enable/disable - handle)
+- [x] Middleware Support
+  - [x] Custom Middlewares
+  - [x] Named Middlewares
+        // todo: implement custom middlewares from string
+        // ? e.g: "auth:(some args)" example: "auth:jwt" or "auth:jwt,admin"
+        // ? or "ratelimit:10:1m" (10 requests per minute)
+  - [x] Custom error handling (WIP: not fully implemented)
+- [ ] Authentication
+  - [ ] User authentication
+  - [ ] Role-based access control
+  - [ ] JWT support
+  - [ ] Session creation and storage
+  - [ ] Cookie handling
+  - [ ] Administration Ui
+  - [ ] User management
+  - [ ] Full OAuth2 support
+- [ ] API Documentation
+  - [ ] Automatic API docs generation
+  - [ ] Swagger integration
+  - [ ] Postman collection generation
+
+## TODO
+
+- [ ] Named routes (WIP: partially implemented)
 
 ## Core Features
 
-- [x] HTTP Server
-
-  - [x] Request handling using `gin-gonic`
-  - [x] Response generation using `gin-gonic`
-  - [x] HTTPS support
-
-- [ ] Routing
-
-  - [ ] URL pattern matching
-  - [ ] Route grouping
-  - [ ] Named routes
-
-- [ ] Middleware Support
-
-  - [ ] Request/response modification
-  - [ ] Authentication
-  - [ ] Logging
-  - [ ] CORS handling
+- [ ] Authentication
 
 - [ ] Request Parsing
 
@@ -48,23 +63,6 @@ This document outlines the comprehensive development roadmap for the Zephyrix ba
 
   - [ ] JSON responses
   - [ ] Streaming responses
-
-- [ ] Database Integration
-
-  - [ ] ORM or query builder
-  - [ ] Connection pooling
-  - [ ] Migration support
-
-- [ ] Authentication and Authorization
-
-  - [ ] User authentication
-  - [ ] Role-based access control
-  - [ ] JWT support
-
-- [ ] Session Management
-
-  - [ ] Session creation and storage
-  - [ ] Cookie handling
 
 - [ ] Caching
 
@@ -116,11 +114,6 @@ This document outlines the comprehensive development roadmap for the Zephyrix ba
 
   - [ ] Request throttling
   - [ ] Custom rate limit rules
-
-- [x] Dependency Injection
-
-  - [x] Service container
-  - [x] Lifecycle management
 
 - [ ] Background Job Processing
 

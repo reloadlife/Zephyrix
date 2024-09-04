@@ -23,7 +23,8 @@ type zephyrix struct {
 	c  context.Context
 	db *beeormEngine
 
-	r *zephyrixRouter
+	r  *zephyrixRouter
+	mw *ZephyrixMiddlewares
 }
 
 // Zephyrix is the interface that users will see outside of the package
@@ -57,4 +58,5 @@ type Zephyrix interface {
 	// Router will return a Router instance
 	Router() Router
 	RegisterRouteHandler(handlers ...any)
+	RegisterMiddleware(middlewares ...any)
 }

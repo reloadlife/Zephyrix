@@ -88,7 +88,7 @@ func (z *zephyrix) customGinLogger() gin.HandlerFunc {
 	}
 }
 
-func (z *zephyrix) setupHandler(handlers *ZephyrixRouteHandlers) http.Handler {
+func (z *zephyrix) setupHandler(handlers *ZephyrixRouteHandlers, mw *ZephyrixMiddlewares) http.Handler {
 	if z.config.Log.Level == "debug" {
 		gin.SetMode(gin.DebugMode)
 	} else {
@@ -140,10 +140,9 @@ func (z *zephyrix) setupHandler(handlers *ZephyrixRouteHandlers) http.Handler {
 	z.assignHandler(handler)
 
 	Logger.Debug("Dependency Injected Routes: %d", len(*handlers))
-
+	z.mw = mw
 	for _, route := range *handlers {
-		handler.Match(route.Method(), route.Path(), convertMiddlewares(route.Handlers()...)...)
+		handler.Match(route.Method(), route.Path(), z.convertMiddlewares(route.Handlers()...)...)
 	}
-
 	return handler
 }

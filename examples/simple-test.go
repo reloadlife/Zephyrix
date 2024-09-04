@@ -2,11 +2,8 @@ package main
 
 import (
 	"context"
-	"log"
 
-	"net/http"
-	_ "net/http/pprof"
-
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gin-gonic/gin"
 	"go.mamad.dev/zephyrix"
 )
@@ -32,14 +29,30 @@ func (r *routeHandler) Path() string {
 
 func (r *routeHandler) Handlers() []any {
 	return []any{
-		func(c *gin.Context) {
+		"mw:1,2,3",
+		func(c *gin.Context) { // also works with zephyrix.Context
 			// response
 			c.JSON(200, r.conf) // todo: implement JSON method
 		},
-		func(c zephyrix.Context) {
-			// response
-			c.JSON(200, r.conf) // todo: implement JSON method
-		},
+	}
+}
+
+type mwHandler struct {
+}
+
+func newMwHandler() *mwHandler {
+	return &mwHandler{}
+}
+
+func (m *mwHandler) Name() string {
+	return "mw"
+}
+
+func (m *mwHandler) Handler(args ...any) any {
+	return func(c *gin.Context) {
+		spew.Dump(args)
+		println("middleware 1")
+		c.Next()
 	}
 }
 
@@ -48,29 +61,22 @@ type User struct {
 }
 
 func main() {
-	go func() {
-		log.Println(http.ListenAndServe("localhost:6060", nil))
-	}()
-
 	app := zephyrix.NewApplication()
 
 	app.Database().RegisterEntity(&User{})
 	app.RegisterRouteHandler(newRouteHandler)
-
+	app.RegisterMiddleware(newMwHandler)
 
 	app.Router().Group(func(router zephyrix.Router) {
 		router.GET("/", func(c *gin.Context) {
-			// response
-			c.JSON(200, "Hello, World!") // todo: implement JSON method
+			c.JSON(200, "Hello, World!")
 		})
 		router.Group(func(router zephyrix.Router) {
-			router.GET("/", func(c *gin.Context) {
-				// response
-				c.JSON(200, "Hello, World! from /test") // todo: implement JSON method
+			router.GET("/", func(z zephyrix.Context) {
+				z.JSON(200, "Hello, World! from /test")
 			})
-			router.GET("/kos", func(c *gin.Context) {
-				// response
-				c.JSON(200, "Hello, World! from /test") // todo: implement JSON method
+			router.GET("/kos", func(z zephyrix.Context) {
+				z.JSON(200, "Hello, World! from /test")
 			})
 		}, "/test")
 	})
