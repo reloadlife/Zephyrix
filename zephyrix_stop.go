@@ -7,8 +7,7 @@ import (
 )
 
 func (z *zephyrix) Stop() error {
-
-	if z.fxStarted.Load() {
+	if z.fxStarted.Load() { // if we're using fx, stop it gracefully
 		stopCtx, cancel := context.WithTimeout(context.Background(), fx.DefaultTimeout)
 		defer cancel()
 
@@ -17,6 +16,5 @@ func (z *zephyrix) Stop() error {
 			return err
 		}
 	}
-
 	return nil
 }

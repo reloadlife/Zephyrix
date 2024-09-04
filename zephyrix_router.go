@@ -5,35 +5,6 @@ import (
 	"go.uber.org/fx"
 )
 
-type HTTPVerb string
-
-const (
-	GET     HTTPVerb = "GET"
-	POST    HTTPVerb = "POST"
-	PUT     HTTPVerb = "PUT"
-	DELETE  HTTPVerb = "DELETE"
-	PATCH   HTTPVerb = "PATCH"
-	OPTIONS HTTPVerb = "OPTIONS"
-	HEAD    HTTPVerb = "HEAD"
-	CONNECT HTTPVerb = "CONNECT"
-	TRACE   HTTPVerb = "TRACE"
-)
-
-type Router interface {
-	Group(func(router Router), ...any)
-	GET(relativePath string, handlerFunction any, middlewareFunctions ...any)
-	POST(relativePath string, handlerFunction any, middlewareFunctions ...any)
-	PUT(relativePath string, handlerFunction any, middlewareFunctions ...any)
-	DELETE(relativePath string, handlerFunction any, middlewareFunctions ...any)
-	PATCH(relativePath string, handlerFunction any, middlewareFunctions ...any)
-	OPTIONS(relativePath string, handlerFunction any, middlewareFunctions ...any)
-	HEAD(relativePath string, handlerFunction any, middlewareFunctions ...any)
-	CONNECT(relativePath string, handlerFunction any, middlewareFunctions ...any)
-	TRACE(relativePath string, handlerFunction any, middlewareFunctions ...any)
-	Any(relativePath string, handlerFunction any, middlewareFunctions ...any)
-	Match(httpMethods []HTTPVerb, relativePath string, handlerFunction any, middlewareFunctions ...any)
-}
-
 // something to do dependency injection with
 func (z *zephyrix) RegisterRouteHandler(handlers ...any) {
 	for _, h := range handlers {

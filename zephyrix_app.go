@@ -2,11 +2,30 @@ package zephyrix
 
 import (
 	"context"
+	"sync/atomic"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
 )
+
+type zephyrix struct {
+	cobraInstance *cobra.Command
+	config        *Config
+	viper         *viper.Viper
+
+	// Zephyrix FX (uber-fx)
+	// this will be using the uber-go/fx under the hood.
+	fx        *fx.App
+	fxStarted atomic.Bool
+	options   []fx.Option
+
+	c  context.Context
+	db *beeormEngine
+
+	r  *zephyrixRouter
+	mw *ZephyrixMiddlewares
+}
 
 var serverGroup = &cobra.Group{
 	ID:    "server",
@@ -19,10 +38,6 @@ var dbGroup = &cobra.Group{
 }
 
 func (z *zephyrix) preInit() {
-	// initialize the FXapplication
-	// this will be utilized to manage
-	// the application lifecycle
-	// and dependency injection
 	z.fx = fx.New(z.options...)
 }
 
@@ -66,7 +81,7 @@ func NewApplication() Zephyrix {
 
 	// provide the http server but never invoke it here
 	z.options = append(z.options, fx.Provide(
-		httpProvider,
+		serverProvide,
 		fx.Annotate(
 			router,
 			fx.ParamTags(`group:"zephyrix_router_http_fx"`),
@@ -112,5 +127,6 @@ func NewApplication() Zephyrix {
 	}
 	migrateCommand.PersistentFlags().BoolVarP(&runUnsafeMigrations, "unsafe-migrations", "f", false, "Run unsafe migrations")
 	cobraInstance.AddCommand(migrateCommand)
+
 	return z
 }

@@ -1,29 +1,33 @@
 package zephyrix
 
 import (
-	"github.com/spf13/cobra"
-	"go.uber.org/fx"
+	"net/http"
 )
 
-type ServerConfig struct {
-	Address     string `mapstructure:"address"`
-	TLSEnabled  bool   `mapstructure:"tls_enabled"`
-	TLSCertFile string `mapstructure:"tls_cert_file"`
-	TLSKeyFile  string `mapstructure:"tls_key_file"`
-	TLSAddress  string `mapstructure:"tls_address"`
-
-	TrustedProxies []string `mapstructure:"trusted_proxies"`
-
-	Cors               CorsConfig `mapstructure:"cors"`
-	SkipLogPaths       []string   `mapstructure:"skip_log_path"`
-	MaxMultipartMemory int64      `mapstructure:"max_multipart_memory"` // todo: make this string and add unit suffixes (parse them)
-}
-
-func (z *zephyrix) serveRun(_ *cobra.Command, _ []string) error {
-	z.options = append(z.options, fx.Invoke(httpInvoke))
-	err := z.fxStart()
-	if err != nil {
-		return err
+func (s *zephyrixServer) configureHTTPServer() error {
+	s.servers[serverHTTP] = &http.Server{
+		Addr:         s.config.Address,
+		ReadTimeout:  s.config.ParsedReadTimeout,
+		WriteTimeout: s.config.ParsedWriteTimeout,
+		IdleTimeout:  s.config.ParsedIdleTimeout,
 	}
 	return nil
+}
+
+func (s *zephyrixServer) SetupHTTPRedirect() {
+	httpServer, ok := s.servers[serverHTTP]
+	if !ok {
+		s.logger.Warn("HTTP server not configured, cannot set up redirect")
+		return
+	}
+
+	if s.config.RedirectToHTTPS {
+		httpServer.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			target := "https://" + r.Host + r.URL.Path
+			if len(r.URL.RawQuery) > 0 {
+				target += "?" + r.URL.RawQuery
+			}
+			http.Redirect(w, r, target, http.StatusMovedPermanently)
+		})
+	}
 }

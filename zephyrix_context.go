@@ -2,10 +2,6 @@ package zephyrix
 
 import "github.com/gin-gonic/gin"
 
-type Context interface {
-	JSON(code int, obj interface{})
-}
-
 type zephyrixContext struct {
 	z          *zephyrix
 	ginContext *gin.Context

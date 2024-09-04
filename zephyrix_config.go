@@ -9,6 +9,14 @@ import (
 	"github.com/spf13/viper"
 )
 
+type Config struct {
+	Environment string         `mapstructure:"environment"`
+	
+	Log         LogConfig      `mapstructure:"log"`
+	Server      ServerConfig   `mapstructure:"server"`
+	Database    DatabaseConfig `mapstructure:"database"`
+}
+
 const (
 	configFileName = "zephyrix"
 	envPrefix      = "ZEPHYRIX"
@@ -18,12 +26,6 @@ var (
 	configFilePath string
 	TestConfig     *Config
 )
-
-type Config struct {
-	Log      LogConfig      `mapstructure:"log"`
-	Server   ServerConfig   `mapstructure:"server"`
-	Database DatabaseConfig `mapstructure:"database"`
-}
 
 // initConfig internal function to initialize the configuration and logger based on the configuration
 // for testing, when TestConfig is not nil, it will use the TestConfig
