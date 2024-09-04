@@ -60,6 +60,7 @@ func setupMySQL() (testcontainers.Container, error) {
 // and also clean up the testApp
 // and then exit the tests
 func TestMain(m *testing.M) {
+	log.Println("Starting to test ...")
 	ctx = context.Background()
 
 	redisC, err := setupRedis()
