@@ -7,11 +7,35 @@ server:
   skip_log_path:
     - "/health"
     - "/metrics"
+    
   max_multipart_memory: 32000000 # 32MB
-
   read_timeout: "5s"
   write_timeout: "10s"
   idle_timeout: "120s"
+
+  cors:
+    enabled: true
+    allowed_origins: ["*"]
+    allowed_methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allowed_headers: ["*"]
+    exposed_headers: ["*"]
+    allow_credentials: true
+    max_age: 12h
+
+  proxies:
+    - name: "front-end-ui"
+      address: "http://localhost:3000"
+      path:
+        - "/*"
+      ignore_path:
+        - "/api"
+        - "/health"
+        - "/metrics"
+      headers:
+        - "X-Forwarded-For"
+        - "X-Forwarded-Proto"
+        - "X-Forwarded-Host"
+      strip_prefix: true
 
   # enable TLS
   # tls_enabled: true
@@ -44,15 +68,6 @@ server:
   # # If using ZeroSSL:
   # auto_ssl_zerossl_eab_key: "your-eab-key"
   # auto_ssl_zerossl_kid: "your-kid"
-
-  cors:
-    enabled: true
-    allowed_origins: ["*"]
-    allowed_methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    allowed_headers: ["*"]
-    exposed_headers: ["*"]
-    allow_credentials: true
-    max_age: 12h
 
 database:
   # for now, it uses BeeORM under the hood.

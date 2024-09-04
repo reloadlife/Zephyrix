@@ -11,7 +11,7 @@ import (
 type ServerConfig struct {
 	Address string `mapstructure:"address"`
 
-	RedirectToHTTPS bool       `mapstructure:"redirect_to_https"`
+	RedirectToHTTPS bool      `mapstructure:"redirect_to_https"`
 	SSL             SSLConfig `mapstructure:"ssl"`
 
 	ReadTimeout  string `mapstructure:"read_timeout"`
@@ -21,8 +21,10 @@ type ServerConfig struct {
 	TrustedProxies []string `mapstructure:"trusted_proxies"`
 
 	Cors               CorsConfig `mapstructure:"cors"`
-	SkipLogPaths       []string    `mapstructure:"skip_log_path"`
-	MaxMultipartMemory int64       `mapstructure:"max_multipart_memory"` // todo: make this string and add unit suffixes (parse them)
+	SkipLogPaths       []string   `mapstructure:"skip_log_path"`
+	MaxMultipartMemory int64      `mapstructure:"max_multipart_memory"` // todo: make this string and add unit suffixes (parse them)
+
+	Proxies []ProxyConfig `mapstructure:"proxies"`
 }
 
 // SSLConfig holds all SSL-related configuration options

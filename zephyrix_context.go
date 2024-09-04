@@ -3,17 +3,19 @@ package zephyrix
 import "github.com/gin-gonic/gin"
 
 type zephyrixContext struct {
-	z          *zephyrix
-	ginContext *gin.Context
+	*gin.Context
+	z *zephyrix
+
+	
 }
 
 func (z *zephyrix) newZephyrixContext(ginContext *gin.Context) *zephyrixContext {
 	return &zephyrixContext{
-		ginContext: ginContext,
-		z:          z,
+		Context: ginContext,
+		z:       z,
 	}
 }
 
 func (z *zephyrixContext) JSON(code int, obj interface{}) {
-	z.ginContext.JSON(code, obj)
+	z.Context.JSON(code, obj)
 }

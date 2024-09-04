@@ -66,5 +66,6 @@ type Router interface {
 
 // Context is the interface that will be used to interact with the request and response
 type Context interface {
+	
 	JSON(code int, obj interface{})
 }
