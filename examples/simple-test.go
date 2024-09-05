@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"time"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/gin-gonic/gin"
@@ -75,10 +76,18 @@ func main() {
 			router.GET("/", func(z zephyrix.Context) {
 				z.JSON(200, "Hello, World! from /test")
 			})
-			router.GET("/kos", func(z zephyrix.Context) {
-				z.JSON(200, "Hello, World! from /test")
+			router.GET("/second-endpoint", func(z zephyrix.Context) {
+				z.JSON(200, "Hello, World! from /test/second-endpoint")
 			})
 		}, "/test")
+	})
+
+	app.RegisterCronFunc("* * * * * *", func() {
+		zephyrix.Logger.Debug("CronJob Triggered")
+	})
+
+	app.RegisterExecuteLaterFunc(5*time.Second, func() {
+		zephyrix.Logger.Debug("ExecuteLaterFunc Triggered")
 	})
 
 	if err := app.Start(context.Background()); err != nil {

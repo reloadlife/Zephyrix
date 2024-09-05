@@ -2,6 +2,7 @@ package zephyrix
 
 import (
 	"context"
+	"time"
 
 	"github.com/latolukasz/beeorm/v3"
 )
@@ -40,6 +41,12 @@ type Zephyrix interface {
 	// RegisterRouteHandler will register a route handler, the handler must implement RouteHandler interface
 	RegisterRouteHandler(handlers ...any)
 	RegisterMiddleware(middlewares ...any)
+
+	RegisterJob(job ...JobInterface)
+	RegisterSchedule(schedule ...ScheduleInterface)
+	RegisterCronFunc(spec string, f func())
+
+	RegisterExecuteLaterFunc(duration time.Duration, f func())
 }
 
 // Database is the interface that will be used to interact with the database
@@ -66,6 +73,5 @@ type Router interface {
 
 // Context is the interface that will be used to interact with the request and response
 type Context interface {
-	
 	JSON(code int, obj interface{})
 }

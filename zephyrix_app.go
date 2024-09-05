@@ -2,8 +2,10 @@ package zephyrix
 
 import (
 	"context"
+	"sync"
 	"sync/atomic"
 
+	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.uber.org/fx"
@@ -25,6 +27,9 @@ type zephyrix struct {
 
 	r  *zephyrixRouter
 	mw *ZephyrixMiddlewares
+
+	crond  *cron.Cron
+	cronMu sync.Mutex
 }
 
 var serverGroup = &cobra.Group{
@@ -96,6 +101,9 @@ func NewApplication() Zephyrix {
 	z.options = append(z.options, fx.Provide(func() *beeormEngine {
 		return z.db
 	}))
+
+	z.crond = cron.New(cron.WithSeconds())
+	z.options = append(z.options, fx.Invoke(z.scheduleInvoke))
 
 	// HTTP SERVER COMMANDS
 

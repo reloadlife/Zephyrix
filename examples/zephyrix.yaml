@@ -7,7 +7,7 @@ server:
   skip_log_path:
     - "/health"
     - "/metrics"
-    
+
   max_multipart_memory: 32000000 # 32MB
   read_timeout: "5s"
   write_timeout: "10s"
@@ -92,3 +92,12 @@ database:
         password: ""
         username: ""
         db: 0
+
+  seed:
+    only_on_empty: true
+    entities:
+      - "User"
+      - "Role"
+      - "Permission"
+      - "UserRole"
+      - "RolePermission"
