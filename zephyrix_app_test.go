@@ -13,7 +13,6 @@ import (
 func TestNewApplication(t *testing.T) {
 	app := zephyrix.NewApplication()
 	require.NotNil(t, app, "NewApplication should return a non-nil Zephyrix instance")
-
 }
 
 func TestZephyrixStartStop(t *testing.T) {

@@ -78,8 +78,6 @@ func (z *zephyrix) redisShellRun(_ *cobra.Command, args []string) error {
 
 		if err := z.executeRedisCommand(ctx, client, line); err != nil {
 			fmt.Printf("Error: %v\n", err)
-			cmd := strings.Fields(line)[0]
-			z.printCommandUsage(cmd)
 		}
 	}
 
@@ -228,6 +226,5 @@ func (z *zephyrix) handleHelpCommand(args []string) {
 	}
 
 	cmd := strings.ToUpper(args[0])
-	z.printCommandUsage(cmd)
-	// You could add more detailed help information here if desired
+	fmt.Println(z.printCommandUsage(cmd))
 }

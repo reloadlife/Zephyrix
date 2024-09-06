@@ -85,32 +85,32 @@ func (mc *mysqlCompleter) Do(line []rune, pos int) (newLine [][]rune, length int
 }
 
 func (z *zephyrix) databaseShellRun(_ *cobra.Command, args []string) error {
-	poolId := 0
+	poolID := 0
 	if len(args) > 0 {
 		var err error
-		poolId, err = strconv.Atoi(args[0])
+		poolID, err = strconv.Atoi(args[0])
 		if err != nil {
 			return fmt.Errorf("invalid pool id: %s. Must be a number", args[0])
 		}
-		if poolId < 0 || poolId >= len(z.config.Database.Pools) {
-			return fmt.Errorf("invalid pool id: %d. Must be between 0 and %d", poolId, len(z.config.Database.Pools)-1)
+		if poolID < 0 || poolID >= len(z.config.Database.Pools) {
+			return fmt.Errorf("invalid pool id: %d. Must be between 0 and %d", poolID, len(z.config.Database.Pools)-1)
 		}
 	}
 
-	dbConfig := z.config.Database.Pools[poolId]
+	dbConfig := z.config.Database.Pools[poolID]
 
 	cfg, err := mysql.ParseDSN(dbConfig.DSN)
 	if err != nil {
-		return fmt.Errorf("failed to parse DSN for pool %d: %w", poolId, err)
+		return fmt.Errorf("failed to parse DSN for pool %d: %w", poolID, err)
 	}
 
 	db, err := sql.Open("mysql", dbConfig.DSN)
 	if err != nil {
-		return fmt.Errorf("failed to connect to database using pool %d: %w", poolId, err)
+		return fmt.Errorf("failed to connect to database using pool %d: %w", poolID, err)
 	}
 	defer db.Close()
 
-	fmt.Printf("Connected to MySQL server at %s using pool %d\n", cfg.Addr, poolId)
+	fmt.Printf("Connected to MySQL server at %s using pool %d\n", cfg.Addr, poolID)
 	fmt.Println("Type 'exit' or 'quit' to exit the shell.")
 
 	currentDB := cfg.DBName
@@ -121,7 +121,7 @@ func (z *zephyrix) databaseShellRun(_ *cobra.Command, args []string) error {
 	completer := &mysqlCompleter{db: db}
 
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt:          fmt.Sprintf("mysql(pool-%d) [%s]> ", poolId, currentDB),
+		Prompt:          fmt.Sprintf("mysql(pool-%d) [%s]> ", poolID, currentDB),
 		HistoryFile:     "/tmp/zephyrix_mysql_history",
 		AutoComplete:    completer,
 		InterruptPrompt: "^C",
@@ -171,7 +171,7 @@ func (z *zephyrix) databaseShellRun(_ *cobra.Command, args []string) error {
 				fmt.Printf("Error changing database: %v\n", err)
 			} else {
 				currentDB = newDB
-				rl.SetPrompt(fmt.Sprintf("mysql(pool-%d) [%s]> ", poolId, currentDB))
+				rl.SetPrompt(fmt.Sprintf("mysql(pool-%d) [%s]> ", poolID, currentDB))
 				fmt.Printf("Database changed to %s\n", currentDB)
 			}
 			continue

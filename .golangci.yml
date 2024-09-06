@@ -1,0 +1,88 @@
+run:
+  concurrency: 4
+  timeout: 10m
+
+linters:
+  disable-all: true
+  enable:
+    - asciicheck
+    - bodyclose
+    - durationcheck
+    - errcheck
+    - errorlint
+    - forbidigo
+    - goimports
+    - gosec
+    - gosimple
+    - govet
+    - makezero
+    - nilerr
+    - prealloc
+    - predeclared
+    - revive
+    - sloglint
+    - staticcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - whitespace
+    - reassign
+
+linters-settings:
+  forbidigo:
+    forbid:
+      - ^(fmt\.Print.*|print|println)$
+      - ^spew\.Dump$
+      - ^http\.Get$
+      - ^http\.Post$
+
+  govet:
+    enable-all: true
+    disable: # too strict
+      - fieldalignment
+      - shadow
+
+  gosec:
+    enable-all: true
+    disable:
+      - G402 # TLS MinVersion too low
+
+  revive:
+    max-open-files: 2048
+    ignore-generated-header: true
+    severity: error
+    enable-all-rules: false
+    rules:
+      - name: if-return
+        disabled: false
+      - name: identical-branches
+        disabled: false
+      - name: indent-error-flow
+        disabled: false
+      - name: range
+        disabled: false
+      - name: superfluous-else
+        disabled: false
+      - name: atomic
+        disabled: false
+      - name: deep-exit
+        disabled: false
+      - name: errorf
+        disabled: false
+      - name: error-return
+        disabled: false
+      - name: range
+        disabled: false
+      - name: empty-block
+        disabled: false
+      - name: unnecessary-stmt
+        disabled: false
+      - name: redefines-builtin-id
+        disabled: false
+      - name: waitgroup-by-value
+        disabled: false
+      - name: unconditional-recursion
+        disabled: false
+issues:
+  exclude:
+    - (.*)should have comment(.+)or be unexported|comment(.+)should be of the form

@@ -5,8 +5,6 @@ import "github.com/gin-gonic/gin"
 type zephyrixContext struct {
 	*gin.Context
 	z *zephyrix
-
-	
 }
 
 func (z *zephyrix) newZephyrixContext(ginContext *gin.Context) *zephyrixContext {

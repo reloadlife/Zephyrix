@@ -104,7 +104,7 @@ var redisCommandMap = map[string]string{
 	"ZUNIONSTORE":      "ZUnionStore",
 }
 
-func (z *zephyrix) printCommandUsage(cmd string) {
+func (z *zephyrix) printCommandUsage(cmd string) string {
 	usageMap := map[string]string{
 		"APPEND":           "APPEND key value",
 		"AUTH":             "AUTH password",
@@ -204,8 +204,8 @@ func (z *zephyrix) printCommandUsage(cmd string) {
 
 	usage, ok := usageMap[strings.ToUpper(cmd)]
 	if ok {
-		fmt.Printf("Usage: %s\n", usage)
+		return fmt.Sprintf("Usage: %s\n", usage)
 	} else {
-		fmt.Printf("No usage information available for command: %s\n", cmd)
+		return fmt.Sprintf("No usage information available for command: %s\n", cmd)
 	}
 }

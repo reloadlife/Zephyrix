@@ -3,10 +3,8 @@ package zephyrix
 import (
 	"context"
 	"fmt"
-	"time"
-
-	"github.com/robfig/cron/v3"
 	"go.uber.org/fx"
+	"time"
 )
 
 type JobInterface interface {
@@ -84,5 +82,5 @@ func (z *zephyrix) executeFuncOnce(f func()) {
 	f()
 
 	// Remove the scheduled job after execution
-	z.crond.Remove(cron.EntryID(z.crond.Entries()[len(z.crond.Entries())-1].ID))
+	z.crond.Remove(z.crond.Entries()[len(z.crond.Entries())-1].ID)
 }

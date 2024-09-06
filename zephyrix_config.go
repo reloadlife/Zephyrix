@@ -1,6 +1,7 @@
 package zephyrix
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -10,11 +11,11 @@ import (
 )
 
 type Config struct {
-	Environment string         `mapstructure:"environment"`
-	
-	Log         LogConfig      `mapstructure:"log"`
-	Server      ServerConfig   `mapstructure:"server"`
-	Database    DatabaseConfig `mapstructure:"database"`
+	Environment string `mapstructure:"environment"`
+
+	Log      LogConfig      `mapstructure:"log"`
+	Server   ServerConfig   `mapstructure:"server"`
+	Database DatabaseConfig `mapstructure:"database"`
 }
 
 const (
@@ -55,7 +56,8 @@ func (z *zephyrix) initConfig() {
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	if err := v.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+		var configFileNotFoundError viper.ConfigFileNotFoundError
+		if !errors.As(err, &configFileNotFoundError) {
 			cobra.CheckErr(fmt.Errorf("error reading config file: %w", err))
 		}
 	}
