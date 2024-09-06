@@ -2,6 +2,20 @@
 
 This document outlines the comprehensive development roadmap for the Zephyrix backend web framework. Below is a list of features to be implemented over time, along with their current status.
 
+## things to do before
+
+- install `air` for hot reloading and easier development
+
+```bash
+go install github.com/air-verse/air@latest
+```
+
+then use `air` to run a test server (./examples/simple-test.go)
+
+```bash
+make dev
+```
+
 ## thigs that are working (implemented features)
 
 > here is a list of things that are implemented, and working in the Zephyrix web framework.

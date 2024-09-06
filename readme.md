@@ -147,6 +147,9 @@ database:
 
 Zephyrix uses BeeORM for database operations, providing an easy-to-use interface for working with MySQL databases and Redis caching.
 
+- BeeORM documents are available here: [BeeORM Documentation](https://beeorm.io/)
+- BeeORM's domain has been expired, use the [BeeORM Documentation](https://beeorm-doc-v3-mhwi4tuqq-latolukasz.vercel.app/) from the [repo](https://github.com/latolukasz/beeorm-doc/tree/v3) instead.
+
 ## Middleware
 
 Middleware in Zephyrix can be easily created and applied to routes:
@@ -209,6 +212,5 @@ If you find Zephyrix useful and would like to support its development, consider 
 - Ethereum:
 
 Thank you for your support!
-
 
 <!-- this is still partially ai generated, i will be writing an actual readme when i finish the project . :P -->

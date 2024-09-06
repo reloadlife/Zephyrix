@@ -2,7 +2,6 @@ package zephyrix
 
 import (
 	"context"
-	"sync"
 	"sync/atomic"
 
 	"github.com/robfig/cron/v3"
@@ -28,8 +27,7 @@ type zephyrix struct {
 	r  *zephyrixRouter
 	mw *ZephyrixMiddlewares
 
-	crond  *cron.Cron
-	cronMu sync.Mutex
+	crond *cron.Cron
 }
 
 var serverGroup = &cobra.Group{
@@ -120,11 +118,24 @@ func NewApplication() Zephyrix {
 	cobraInstance.AddCommand(serveCommand)
 
 	// DATABASE COMMANDS
-	migrateCommand := &cobra.Command{
+
+	dbCommand := &cobra.Command{
 		GroupID: dbGroup.ID,
-		Use:     "migrate",
-		Short:   "Run database migrations",
-		Long:    "Run database migrations, to match the schema with the models, this will create tables, columns, indexes, etc., and will DROP any existing tables that doesnt match the schema",
+		Use:     "database",
+		Short:   "Database related commands",
+		Long:    "Commands for database operations",
+		PersistentPostRun: func(_ *cobra.Command, _ []string) {
+			defer cancel()
+		},
+		PersistentPreRun: func(_ *cobra.Command, _ []string) {
+			z.options = append(z.options, fx.Invoke(beeormInvoke))
+		},
+	}
+
+	migrateCommand := &cobra.Command{
+		Use:   "migrate",
+		Short: "Run database migrations",
+		Long:  "Run database migrations, to match the schema with the models, this will create tables, columns, indexes, etc., and will DROP any existing tables that doesnt match the schema",
 		PersistentPostRun: func(_ *cobra.Command, _ []string) {
 			defer cancel()
 		},
@@ -134,7 +145,24 @@ func NewApplication() Zephyrix {
 		RunE: z.migrationRun,
 	}
 	migrateCommand.PersistentFlags().BoolVarP(&runUnsafeMigrations, "unsafe-migrations", "f", false, "Run unsafe migrations")
-	cobraInstance.AddCommand(migrateCommand)
 
+	mysqlShellCommand := &cobra.Command{
+		Use:   "mysql-shell [pool_id]",
+		Short: "Open a MySQL shell",
+		Long:  "Open an interactive MySQL shell to execute queries",
+		RunE:  z.databaseShellRun,
+	}
+
+	redisShellCommand := &cobra.Command{
+		Use:   "redis-shell [pool_id]",
+		Short: "Open a Redis shell",
+		Long:  "Open an interactive Redis shell to execute commands",
+		RunE:  z.redisShellRun,
+	}
+
+	dbCommand.AddCommand(migrateCommand)
+	dbCommand.AddCommand(mysqlShellCommand)
+	dbCommand.AddCommand(redisShellCommand)
+	z.cobraInstance.AddCommand(dbCommand)
 	return z
 }
