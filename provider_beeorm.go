@@ -47,30 +47,23 @@ type RedisConfig struct {
 	Username string `mapstructure:"username"` // Username for Redis authentication
 	DB       int    `mapstructure:"db"`       // Redis database number
 }
-
-// beeormEngine encapsulates the BeeORM engine and its associated data.
 type beeormEngine struct {
-	conf *DatabaseConfig // Configuration for the BeeORM engine
-
-	r       beeorm.Registry // BeeORM registry
-	e       beeorm.Engine   // BeeORM engine
-	models  sync.Map        // Thread-safe map to store registered models
-	isDirty bool            // Flag to indicate if the engine needs revalidation
-	mu      sync.RWMutex    // Mutex for thread-safe operations
+	conf   *DatabaseConfig
+	r      beeorm.Registry
+	e      beeorm.Engine
+	models sync.Map
+	mu     sync.RWMutex
 }
 
-// newBeeormEngine creates and initializes a new beeormEngine.
 func newBeeormEngine() *beeormEngine {
 	r := beeorm.NewRegistry()
 	r.RegisterPlugin(modified.New("CreatedAt", "ModifiedAt"))
 	return &beeormEngine{
-		r:       r,
-		isDirty: true,
+		r: r,
 	}
 }
 
-// RegisterEntity registers one or more entities with the BeeORM engine.
-// It's safe to call this method concurrently from multiple goroutines.
+// RegisterEntity now only adds entities to the models map
 func (b *beeormEngine) RegisterEntity(entities ...interface{}) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
@@ -78,17 +71,13 @@ func (b *beeormEngine) RegisterEntity(entities ...interface{}) {
 	for _, entity := range entities {
 		key := fmt.Sprintf("%T", entity)
 		b.models.Store(key, entity)
-		Logger.Debug("Registered entity: %s", key)
+		Logger.Debug("Added entity to registration queue: %s", key)
 	}
-	b.r.RegisterEntity(entities...)
-	b.isDirty = true
 }
 
-// GetEngine returns the BeeORM engine, validating it if necessary.
-// It's safe to call this method concurrently from multiple goroutines.
 func (b *beeormEngine) GetEngine() beeorm.Engine {
 	b.mu.RLock()
-	if !b.isDirty {
+	if b.e != nil {
 		defer b.mu.RUnlock()
 		return b.e
 	}
@@ -97,7 +86,7 @@ func (b *beeormEngine) GetEngine() beeorm.Engine {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 
-	if !b.isDirty {
+	if b.e != nil {
 		return b.e
 	}
 
@@ -107,20 +96,21 @@ func (b *beeormEngine) GetEngine() beeorm.Engine {
 		return nil
 	}
 	b.e = engine
-	b.isDirty = false
 	return engine
 }
 
-// beeormProvider is a factory function that creates a new beeormEngine.
-// It's designed to be used with the fx dependency injection framework.
 func beeormProvider() *beeormEngine {
 	return newBeeormEngine()
 }
 
-// beeormInvoke sets up the BeeORM engine with the provided configuration and lifecycle hooks.
-// It's designed to be used with the fx dependency injection framework.
 func beeormInvoke(lc fx.Lifecycle, bee *beeormEngine, conf *Config) {
 	bee.conf = &conf.Database
+
+	// Register all entities from the models map
+	bee.models.Range(func(_, value interface{}) bool {
+		bee.r.RegisterEntity(value)
+		return true
+	})
 
 	for _, pool := range conf.Database.Pools {
 		configurePool(bee.r, pool)
@@ -138,17 +128,15 @@ func beeormInvoke(lc fx.Lifecycle, bee *beeormEngine, conf *Config) {
 			return nil
 		},
 		OnStop: func(context.Context) error {
-			// Implement any necessary cleanup here
-			return nil
+			return nil // Add any necessary cleanup here
 		},
 	})
 }
 
-// configurePool sets up a single database pool with the given configuration.
 func configurePool(r beeorm.Registry, pool DatabasePoolConfig) {
-	maxOpenConns := getMaxOpenConns(pool.MaxOpenConns)
-	maxIdleConns := getMaxIdleConns(pool.MaxIdleConns)
-	maxLifeTime := getMaxLifeTime(pool.ConnMaxLifetime)
+	maxOpenConns := defaultIfZero(pool.MaxOpenConns, 10)
+	maxIdleConns := defaultIfZero(pool.MaxIdleConns, 5)
+	maxLifeTime := parseMaxLifeTime(pool.ConnMaxLifetime)
 
 	r.RegisterMySQL(pool.DSN, pool.Name, &beeorm.MySQLOptions{
 		MaxOpenConnections: maxOpenConns,
@@ -171,27 +159,14 @@ func configurePool(r beeorm.Registry, pool DatabasePoolConfig) {
 	}
 }
 
-// getMaxOpenConns returns the maximum number of open connections,
-// using a default value if none is specified.
-func getMaxOpenConns(maxOpenConns int) int {
-	if maxOpenConns == 0 {
-		return 10
+func defaultIfZero(value, defaultValue int) int {
+	if value == 0 {
+		return defaultValue
 	}
-	return maxOpenConns
+	return value
 }
 
-// getMaxIdleConns returns the maximum number of idle connections,
-// using a default value if none is specified.
-func getMaxIdleConns(maxIdleConns int) int {
-	if maxIdleConns == 0 {
-		return 5
-	}
-	return maxIdleConns
-}
-
-// getMaxLifeTime parses and returns the maximum connection lifetime,
-// using a default value if none is specified or if parsing fails.
-func getMaxLifeTime(connMaxLifetime string) time.Duration {
+func parseMaxLifeTime(connMaxLifetime string) time.Duration {
 	if connMaxLifetime == "" {
 		return 30 * time.Minute
 	}
@@ -203,8 +178,6 @@ func getMaxLifeTime(connMaxLifetime string) time.Duration {
 	return maxLifeTime
 }
 
-// runFlusher periodically flushes asynchronous database events.
-// It runs in its own goroutine.
 func runFlusher(engine beeorm.Engine) {
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
@@ -222,6 +195,9 @@ func runFlusher(engine beeorm.Engine) {
 }
 
 func (b *beeormEngine) HasPool(name string) bool {
+	if b.conf == nil{
+		return true // assume it has the pool
+	}
 	for _, pool := range b.conf.Pools {
 		if pool.Name == name {
 			return true

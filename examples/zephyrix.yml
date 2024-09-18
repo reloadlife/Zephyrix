@@ -1,3 +1,6 @@
+environment: "development"
+storage: "./tmp"
+
 log:
   level: "debug"
   outputs:
@@ -6,6 +9,7 @@ log:
 audit_log:
   enabled: true
   audit_pool: "audit"
+  storage_path: "./tmp"
   outputs:
     - "stdout"
     - "{{STORAGE}}/auth-audit.log"
@@ -43,7 +47,7 @@ authentication:
 
   api_key:
     enabled: true
-    expiration: "30d"
+    expiration: "3600h"
 
   jwt:
     secret: "secret"
@@ -93,7 +97,7 @@ authentication:
     require_lowercase: true
     require_numbers: true
     require_special_chars: true
-    max_age: "90d"
+    max_age: "36000h"
     history_count: 5
 
   account_lockout:
@@ -122,7 +126,7 @@ authentication:
 
   consent_management:
     require_consent: true
-    consent_validity: "365d"
+    consent_validity: "360000h"
 
   passwordless:
     enabled: true

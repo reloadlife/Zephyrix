@@ -164,27 +164,37 @@ func (ap *AuthProvider) getSigningMethod() jwt.SigningMethod {
 
 func (ap *AuthProvider) getUserByUsername(ctx context.Context, username string) (User, error) {
 	// Implementation depends on your User model and ORM usage
-	panic("getUserByUsername not implemented")
+	fmt.Println("getUserByUsername not implemented")
+
+	return nil, nil
 }
 
 func (ap *AuthProvider) warmCaches(ctx context.Context) error {
 	// Implementation for warming up caches
-	panic("warmCaches not implemented")
+	fmt.Println("warmCaches not implemented")
+
+	return nil
 }
 
 func (ap *AuthProvider) cleanupTemporaryData(ctx context.Context) error {
 	// Implementation for cleaning up temporary data
-	panic("cleanupTemporaryData not implemented")
+	fmt.Println("cleanupTemporaryData not implemented")
+
+	return nil
 }
 
 func (ap *AuthProvider) findOrCreateOAuth2User(ctx context.Context, providerName string, userInfo map[string]interface{}) (User, error) {
 	// Implementation for finding or creating a user based on OAuth2 user info
-	panic("findOrCreateOAuth2User not implemented")
+	fmt.Println("findOrCreateOAuth2User not implemented")
+
+	return nil, nil
 }
 
 func (ap *AuthProvider) storeOAuth2Token(ctx context.Context, user User, providerName string, token *oauth2.Token) error {
 	// Implementation for storing the OAuth2 token for the user
-	panic("storeOAuth2Token not implemented")
+	fmt.Println("storeOAuth2Token not implemented")
+
+	return nil
 }
 
 // AuthProviderModule provides an fx.Option to register the AuthProvider with the application

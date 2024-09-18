@@ -100,12 +100,13 @@ func NewApplication() Zephyrix {
 	z.db = beeormProvider()
 	z.db.RegisterEntity(&models.AuditLogEntity{})
 	z.db.RegisterEntity(&models.SessionEntity{})
-	
+
 	z.options = append(z.options, fx.Provide(func() *beeormEngine {
 		return z.db
 	}))
-	z.options = append(z.options, fx.Provide(func(bee *beeormEngine) beeorm.Engine {
-		return bee.GetEngine()
+	z.options = append(z.options, fx.Provide(func(bee *beeormEngine) (beeorm.Engine, beeorm.RedisCache) {
+		e := bee.GetEngine()
+		return e, e.Redis(z.config.Database.Pools[0].Name)
 	}))
 	z.options = append(z.options, fx.Provide(func(config *Config, orm *beeormEngine) *AuditLogger {
 		l, err := NewAuditLogger(config, orm)
@@ -114,6 +115,7 @@ func NewApplication() Zephyrix {
 		}
 		return l
 	}))
+
 	z.options = append(z.options, fx.Provide(NewRateLimiter))
 	z.options = append(z.options, fx.Invoke(invokeRateLimiter))
 

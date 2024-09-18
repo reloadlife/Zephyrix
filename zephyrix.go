@@ -1,3 +1,25 @@
+// Project Zephyrix is a Simple yet complex and feature-rich web application framework for Go.
+//
+// It is designed to be simple to use and easy to understand, but also to be powerful and flexible.
+//
+// Getting started needs no more than just a few lines of code, but it can be extended to be as complex as you need.
+//
+// get started by simply installing Zephyrix:
+// go install github.com/reloadlife/zephyrix
+// and then create a new project:
+// zephyrix new <project name>
+//
+// this command will generate a new project with all the scaffolding you need to get started.
+// you can start working on your project rightaway.
+//
+// in order to run the project in deveopment mode, you can run:
+// make dev
+// this will start the server in development mode, and you can start working on your project.
+// the dev server uses `air` to watch for changes and restart the server.
+//
+// to start working on your project, you can start by changing the contents of the `main.go` file.
+//
+// have fun coding :)
 package zephyrix
 
 import (

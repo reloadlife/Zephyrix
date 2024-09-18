@@ -14,9 +14,10 @@ import (
 )
 
 type AuditLogConfig struct {
-	Enabled   bool     `mapstructure:"enabled"`
-	AuditPool string   `mapstructure:"audit_pool"`
-	Outputs   []string `mapstructure:"outputs"`
+	Enabled     bool     `mapstructure:"enabled"`
+	AuditPool   string   `mapstructure:"audit_pool"`
+	Outputs     []string `mapstructure:"outputs"`
+	StoragePath string   `mapstructure:"storage_path"`
 }
 
 type AuditLogger struct {
@@ -62,7 +63,7 @@ func (a *AuditLogger) setupOutputs() error {
 }
 
 func (a *AuditLogger) setupFileOutput(output string) error {
-	path := strings.TrimPrefix(output, "{{STORAGE}}")
+	path := strings.Replace(output, "{{STORAGE}}", a.config.StoragePath, 1)
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to create directory for audit log: %w", err)
