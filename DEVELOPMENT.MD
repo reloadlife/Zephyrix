@@ -16,6 +16,11 @@ then use `air` to run a test server (./examples/simple-test.go)
 make dev
 ```
 
+## TODO
+
+1. !! A very important feature: MOVE EVERY **SYNC / MUTEX LOCK** TO A **REDIS LOCK** for multi-instance deployments.
+2. 
+
 ## thigs that are working (implemented features)
 
 > here is a list of things that are implemented, and working in the Zephyrix web framework.

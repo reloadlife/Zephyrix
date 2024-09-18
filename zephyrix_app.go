@@ -4,9 +4,11 @@ import (
 	"context"
 	"sync/atomic"
 
+	"github.com/latolukasz/beeorm/v3"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.mamad.dev/zephyrix/models"
 	"go.uber.org/fx"
 )
 
@@ -96,12 +98,28 @@ func NewApplication() Zephyrix {
 	)
 
 	z.db = beeormProvider()
+	z.db.RegisterEntity(&models.AuditLogEntity{})
+	z.db.RegisterEntity(&models.SessionEntity{})
+	
 	z.options = append(z.options, fx.Provide(func() *beeormEngine {
 		return z.db
 	}))
+	z.options = append(z.options, fx.Provide(func(bee *beeormEngine) beeorm.Engine {
+		return bee.GetEngine()
+	}))
+	z.options = append(z.options, fx.Provide(func(config *Config, orm *beeormEngine) *AuditLogger {
+		l, err := NewAuditLogger(config, orm)
+		if err != nil {
+			Logger.Fatal("Failed to create audit logger: %s", err)
+		}
+		return l
+	}))
+	z.options = append(z.options, fx.Provide(NewRateLimiter))
+	z.options = append(z.options, fx.Invoke(invokeRateLimiter))
 
 	z.crond = cron.New(cron.WithSeconds())
 	z.options = append(z.options, fx.Invoke(z.scheduleInvoke))
+	z.options = append(z.options, AuthProviderModule())
 
 	// HTTP SERVER COMMANDS
 

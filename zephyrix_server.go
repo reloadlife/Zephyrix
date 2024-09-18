@@ -25,6 +25,8 @@ type ServerConfig struct {
 	MaxMultipartMemory int64      `mapstructure:"max_multipart_memory"` // todo: make this string and add unit suffixes (parse them)
 
 	Proxies []ProxyConfig `mapstructure:"proxies"`
+
+	Routes map[string]RouteConfig `mapstructure:"routes"`
 }
 
 // SSLConfig holds all SSL-related configuration options

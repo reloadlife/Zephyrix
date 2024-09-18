@@ -7,6 +7,7 @@ import (
 type ZephyrixRouteHandlers []ZephyrixRouteHandler
 
 type ZephyrixRouteHandler interface {
+	Name() string
 	Method() []string
 	Path() string
 	Handlers() []any

@@ -12,16 +12,23 @@ import (
 // THIS IS NOT SAFE, NEVER DO IN PROD, THIS IS ONLY HERE TO TEST IF DI WORKS
 type routeHandler struct {
 	conf *zephyrix.Config
+
+	name string
 }
 
 func newRouteHandler(conf *zephyrix.Config) *routeHandler {
 	return &routeHandler{
 		conf: conf,
+		name: "hello_world",
 	}
 }
 
 func (r *routeHandler) Method() []string {
 	return []string{"GET"}
+}
+
+func (r *routeHandler) Name() string {
+	return r.name
 }
 
 func (r *routeHandler) Path() string {
@@ -57,6 +64,13 @@ func (m *mwHandler) Handler(args ...any) any {
 	}
 }
 
+func newRouteHandler2(conf *zephyrix.Config) *routeHandler {
+	return &routeHandler{
+		conf: conf,
+		name: "testing_hw",
+	}
+}
+
 type User struct {
 	ID uint64 `orm:"table=users;redisCache;localCache"`
 }
@@ -66,6 +80,7 @@ func main() {
 
 	app.Database().RegisterEntity(&User{})
 	app.RegisterRouteHandler(newRouteHandler)
+	app.RegisterRouteHandler(newRouteHandler2)
 	app.RegisterMiddleware(newMwHandler)
 
 	app.Router().Group(func(router zephyrix.Router) {

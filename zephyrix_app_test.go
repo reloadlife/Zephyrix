@@ -1,4 +1,4 @@
-package zephyrix_test
+package zephyrix
 
 import (
 	"context"
@@ -7,19 +7,18 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"go.mamad.dev/zephyrix"
 )
 
 func TestNewApplication(t *testing.T) {
-	app := zephyrix.NewApplication()
+	app := NewApplication()
 	require.NotNil(t, app, "NewApplication should return a non-nil Zephyrix instance")
 }
 
 func TestZephyrixStartStop(t *testing.T) {
-	app := zephyrix.NewApplication()
+	app := NewApplication()
 
 	// Set up a test route
-	app.Router().GET("/test", func(c zephyrix.Context) {
+	app.Router().GET("/test", func(c Context) {
 		c.JSON(200, "Test route")
 	})
 
@@ -58,8 +57,8 @@ func TestZephyrixStartStop(t *testing.T) {
 }
 
 func TestZephyrixStartStopWithContext(t *testing.T) {
-	app := zephyrix.NewApplication()
-	app.Router().GET("/test", func(c zephyrix.Context) {
+	app := NewApplication()
+	app.Router().GET("/test", func(c Context) {
 		c.JSON(200, "Test route")
 	})
 

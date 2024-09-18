@@ -13,9 +13,12 @@ import (
 type Config struct {
 	Environment string `mapstructure:"environment"`
 
-	Log      LogConfig      `mapstructure:"log"`
-	Server   ServerConfig   `mapstructure:"server"`
-	Database DatabaseConfig `mapstructure:"database"`
+	Log            LogConfig         `mapstructure:"log"`
+	Server         ServerConfig      `mapstructure:"server"`
+	Database       DatabaseConfig    `mapstructure:"database"`
+	Authentication AuthConfig        `mapstructure:"authentication"`
+	AuditLog       AuditLogConfig    `mapstructure:"audit_log"`
+	RateLimiter    RateLimiterConfig `mapstructure:"rate_limiter"`
 }
 
 const (

@@ -1,6 +1,148 @@
 log:
   level: "debug"
-  outputs: ["stdout"]
+  outputs:
+    - "stdout"
+
+audit_log:
+  enabled: true
+  audit_pool: "audit"
+  outputs:
+    - "stdout"
+    - "{{STORAGE}}/auth-audit.log"
+    - "DATABASE" # for this to work, it requires a pool name named "audit" to be in the database section
+
+rate_limiter:
+  redis_pool: "default"
+  pools:
+    - name: "default"
+      limit: 100
+      burst: 10
+      interval: "1m"
+
+    - name: "login"
+      limit: 10
+      burst: 5
+      interval: "5m"
+
+    - name: "password_reset"
+      limit: 5
+      burst: 2
+      interval: "10m"
+
+authentication:
+  redis_pool: "default"
+
+  grant_types:
+    - "password"
+    - "refresh_token"
+    - "authorization_code"
+
+  hashing_cost: 10 # default is 12
+  token_length: 32
+  audit: true
+
+  api_key:
+    enabled: true
+    expiration: "30d"
+
+  jwt:
+    secret: "secret"
+    issuer: "zephyrix"
+    audience: "zephyrix"
+    expiration: "1h"
+    refresh_expiration: "24h"
+    signing_method: "HS256"
+
+  session:
+    storage_type: "redis"
+    pool: "default"
+    prefix: "sess"
+    expiration: "24h"
+    refresh_window: "15m"
+    cleanup_interval: "1h"
+
+  oauth2:
+    providers_source: "config" # Can be "config" or "database"
+    default_providers:
+      google:
+        client_id: "client_id"
+        client_secret: "client_secret"
+        redirect_url: "http://localhost:8000/auth/google/callback"
+      facebook:
+        client_id: "client_id"
+        client_secret: "client_secret"
+        redirect_url: "http://localhost:8000/auth/facebook/callback"
+      github:
+        client_id: "client_id"
+        client_secret: "client_secret"
+        redirect_url: "http://localhost:8000/auth/github/callback"
+
+  multi_factor_authentication:
+    enabled: true
+    methods:
+      - "totp"
+      - "sms"
+      - "email"
+    enforce_for_roles:
+      - "admin"
+      - "finantial"
+
+  password_policy:
+    min_length: 12
+    require_uppercase: true
+    require_lowercase: true
+    require_numbers: true
+    require_special_chars: true
+    max_age: "90d"
+    history_count: 5
+
+  account_lockout:
+    max_attempts: 5
+    lockout_duration: "30m"
+    reset_after: "24h"
+
+  security_headers:
+    hsts_enabled: true
+    csp_enabled: true
+    xframe_options: "SAMEORIGIN"
+
+  user_registration:
+    email_verification_required: true
+    invitation_only: false
+    allowed_domains: ["example.com", "trusteddomain.com"]
+
+  account_recovery:
+    methods:
+      - "email"
+      - "security_questions"
+    token_expiration: "15m"
+
+  session_management:
+    force_logout_all: false # Allow admins to force logout all sessions
+
+  consent_management:
+    require_consent: true
+    consent_validity: "365d"
+
+  passwordless:
+    enabled: true
+    methods:
+      - "magic_link"
+      - "webauthn"
+
+  geofencing:
+    enabled: false
+    allowed_countries: ["US", "CA", "GB"]
+
+  webhooks:
+    login_success: "https://example.com/webhooks/login-success"
+    login_failure: "https://example.com/webhooks/login-failure"
+
+  feature_toggles:
+    social_login: true
+    api_key_auth: true
+    mfa: true
+    passwordless: false
 
 server:
   address: ":8000"
@@ -38,6 +180,11 @@ server:
       strip_prefix: true
 
   # enable TLS
+  # hey, the developer here,
+  # personally i advise you to use a reverse proxy for TLS / SSL, instead of this for a large project (production)
+  # like Caddy, Nginx, Traefik, etc.
+  # but if you have a small project, you can use this.
+
   # tls_enabled: true
   # tls_address: ":443"
   # tls_cert_file: "/path/to/cert.pem"
@@ -69,12 +216,39 @@ server:
   # auto_ssl_zerossl_eab_key: "your-eab-key"
   # auto_ssl_zerossl_kid: "your-kid"
 
+  routes:
+    hello_world:
+      methods:
+        - "GET"
+        - "POST"
+      path: "/hello"
+
 database:
   # for now, it uses BeeORM under the hood.
   # and due to that, only MySQL, redis / dragonfly are supported.
   pools:
     - name: "default"
       dsn: "root:password@tcp(127.0.0.1:3306)/zephyrix?charset=utf8mb4&parseTime=True&loc=Local"
+      max_open_conns: 100
+      max_idle_conns: 10
+      conn_max_lifetime: "1h"
+      unsafe_auto_migrate: false
+      default_encoding: "utf8mb4"
+      default_collation: "utf8mb4_unicode_ci"
+      ignored_tables:
+        - "migrations"
+      cache:
+        enabled: true
+        size: 10000
+      redis:
+        enabled: true
+        address: "127.0.0.1:6379"
+        password: ""
+        username: ""
+        db: 0
+
+    - name: "audit"
+      dsn: "root:password@tcp(127.0.0.1:3306)/zephyrix_audit?charset=utf8mb4&parseTime=True&loc=Local"
       max_open_conns: 100
       max_idle_conns: 10
       conn_max_lifetime: "1h"
@@ -101,3 +275,16 @@ database:
       - "Permission"
       - "UserRole"
       - "RolePermission"
+
+notification:
+  enabled: true
+  outputs:
+    - "stdout"
+    - "email"
+    - "telegram"
+
+# telegram integration for notifications / telegram bot management :)
+telegram:
+  enabled: true
+
+email:

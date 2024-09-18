@@ -12,6 +12,12 @@ import (
 	"go.uber.org/fx"
 )
 
+// DatabaseConfig represents the overall database configuration,
+// which can include multiple database pools.
+type DatabaseConfig struct {
+	Pools []DatabasePoolConfig `mapstructure:"pools"` // List of database pool configurations
+}
+
 // DatabasePoolConfig represents the configuration for a single database pool.
 type DatabasePoolConfig struct {
 	Name              string      `mapstructure:"name"`                // Name of the database pool
@@ -42,14 +48,10 @@ type RedisConfig struct {
 	DB       int    `mapstructure:"db"`       // Redis database number
 }
 
-// DatabaseConfig represents the overall database configuration,
-// which can include multiple database pools.
-type DatabaseConfig struct {
-	Pools []DatabasePoolConfig `mapstructure:"pools"` // List of database pool configurations
-}
-
 // beeormEngine encapsulates the BeeORM engine and its associated data.
 type beeormEngine struct {
+	conf *DatabaseConfig // Configuration for the BeeORM engine
+
 	r       beeorm.Registry // BeeORM registry
 	e       beeorm.Engine   // BeeORM engine
 	models  sync.Map        // Thread-safe map to store registered models
@@ -118,6 +120,8 @@ func beeormProvider() *beeormEngine {
 // beeormInvoke sets up the BeeORM engine with the provided configuration and lifecycle hooks.
 // It's designed to be used with the fx dependency injection framework.
 func beeormInvoke(lc fx.Lifecycle, bee *beeormEngine, conf *Config) {
+	bee.conf = &conf.Database
+
 	for _, pool := range conf.Database.Pools {
 		configurePool(bee.r, pool)
 	}
@@ -215,4 +219,13 @@ func runFlusher(engine beeorm.Engine) {
 			Logger.Debug("Database events flushed")
 		}
 	}
+}
+
+func (b *beeormEngine) HasPool(name string) bool {
+	for _, pool := range b.conf.Pools {
+		if pool.Name == name {
+			return true
+		}
+	}
+	return false
 }

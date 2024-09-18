@@ -181,11 +181,68 @@ func (z *zephyrix) configureTrustedProxies(handler *gin.Engine) {
 	}
 }
 
+
+var validMethods = map[string]bool{
+	"GET":     true,
+	"POST":    true,
+	"PUT":     true,
+	"DELETE":  true,
+	"PATCH":   true,
+	"HEAD":    true,
+	"OPTIONS": true,
+}
+
+type RouteConfig struct {
+	Methods     []string `mapstructure:"methods"`
+	Path        string   `mapstructure:"path"`
+	Middlewares []any    `mapstructure:"middlewares"`
+}
+
 // registerRoutes registers the routes and middleware for the Gin engine.
 func (z *zephyrix) registerRoutes(handler *gin.Engine, handlers *ZephyrixRouteHandlers, mw *ZephyrixMiddlewares) {
-	Logger.Debug("Dependency Injected Routes: %d", len(*handlers))
 	z.mw = mw
+	routes := z.config.Server.Routes
+
+	Logger.Debug("Registering %d dependency injected routes", len(*handlers))
+
 	for _, route := range *handlers {
-		handler.Match(route.Method(), route.Path(), z.convertMiddlewares(route.Handlers()...)...)
+		routeName := route.Name()
+		routeConfig, configExists := routes[routeName]
+
+		methods := route.Method()
+		path := route.Path()
+		middlewares := make([]any, 0, len(route.Handlers()))
+		middlewares = append(middlewares, route.Handlers()...)
+
+		if configExists {
+			Logger.Debug("Applying configuration for route: %s", routeName)
+			if len(routeConfig.Methods) > 0 {
+				methods = routeConfig.Methods
+			}
+			if routeConfig.Path != "" {
+				path = routeConfig.Path
+			}
+			if len(routeConfig.Middlewares) > 0 {
+				middlewares = append(middlewares, routeConfig.Middlewares...)
+			}
+		}
+
+		Logger.Debug("Route %s: %v %s", routeName, methods, path)
+
+		// Filter out invalid HTTP methods
+		validatedMethods := make([]string, 0, len(methods))
+		for _, method := range methods {
+			if validMethods[method] {
+				validatedMethods = append(validatedMethods, method)
+			} else {
+				Logger.Warn("Invalid HTTP method for route %s: %s", routeName, method)
+			}
+		}
+
+		if len(validatedMethods) > 0 {
+			handler.Match(validatedMethods, path, z.convertMiddlewares(middlewares...)...)
+		} else {
+			Logger.Warn("No valid HTTP methods for route %s, skipping", routeName)
+		}
 	}
 }
