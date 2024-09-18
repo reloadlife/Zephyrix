@@ -19,10 +19,12 @@ func (z *zephyrix) migrationRun(_ *cobra.Command, _ []string) error {
 	return nil
 }
 
-func (z *zephyrix) migrate() {
-	c := z.db.GetEngine().NewORM(z.c)
+func (z *zephyrix) migrate(db *beeormEngine) {
+	Logger.Info("Running database migrations")
+	c := db.GetEngine().NewORM(z.c)
 	alters := beeorm.GetAlters(c)
 	for _, alter := range alters {
+		Logger.Info("Applying migration: %s (pool: %s)", alter.SQL, alter.Pool)
 		if !alter.Safe {
 			Logger.Warn("Unsafe migration detected: %s (pool: %s)", alter.SQL, alter.Pool)
 			if !runUnsafeMigrations {

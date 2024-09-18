@@ -96,6 +96,7 @@ func (b *beeormEngine) GetEngine() beeorm.Engine {
 		return nil
 	}
 	b.e = engine
+	fmt.Print("BeeORM engine created\n")
 	return engine
 }
 
@@ -195,7 +196,7 @@ func runFlusher(engine beeorm.Engine) {
 }
 
 func (b *beeormEngine) HasPool(name string) bool {
-	if b.conf == nil{
+	if b.conf == nil {
 		return true // assume it has the pool
 	}
 	for _, pool := range b.conf.Pools {
