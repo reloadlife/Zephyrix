@@ -1,4 +1,3 @@
-// Package zephyrix provides a high-performance web framework for Go.
 package zephyrix
 
 import (
@@ -47,6 +46,7 @@ type RedisConfig struct {
 	Username string `mapstructure:"username"` // Username for Redis authentication
 	DB       int    `mapstructure:"db"`       // Redis database number
 }
+
 type beeormEngine struct {
 	conf   *DatabaseConfig
 	r      beeorm.Registry
@@ -55,7 +55,7 @@ type beeormEngine struct {
 	mu     sync.RWMutex
 }
 
-func newBeeormEngine() *beeormEngine {
+func beeormProvider() *beeormEngine {
 	r := beeorm.NewRegistry()
 	r.RegisterPlugin(modified.New("CreatedAt", "ModifiedAt"))
 	return &beeormEngine{
@@ -98,10 +98,6 @@ func (b *beeormEngine) GetEngine() beeorm.Engine {
 	b.e = engine
 	fmt.Print("BeeORM engine created\n")
 	return engine
-}
-
-func beeormProvider() *beeormEngine {
-	return newBeeormEngine()
 }
 
 func beeormInvoke(lc fx.Lifecycle, bee *beeormEngine, conf *Config) {

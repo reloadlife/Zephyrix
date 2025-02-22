@@ -1,15 +1,14 @@
-package zephyrix_test
+package zephyrix
 
 import (
-	"os"
-	"testing"
+	// "os"
+	// "testing"
 
 	"context"
-	"log"
+	// "log"
 
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"go.mamad.dev/zephyrix"
 )
 
 // well well well, every project will need tests !
@@ -19,7 +18,7 @@ import (
 // we will also be using it to run a Zephyrix server to test **Some** edge cases
 // to make sure everything is working as expected.
 
-var testApp zephyrix.Zephyrix
+var testApp Zephyrix
 var ctx context.Context
 
 func setupRedis() (testcontainers.Container, error) {
@@ -59,67 +58,67 @@ func setupMySQL() (testcontainers.Container, error) {
 // and after the tests are done, we need to clean up the test containers
 // and also clean up the testApp
 // and then exit the tests
-func TestMain(m *testing.M) {
-	log.Println("Starting to test ...")
-	ctx = context.Background()
+// func TestMain(m *testing.M) {
+// 	log.Println("Starting to test ...")
+// 	ctx = context.Background()
 
-	redisC, err := setupRedis()
-	if err != nil {
-		log.Fatalf("Failed to start Redis: %s", err)
-	}
-	mysqlC, err := setupMySQL()
-	if err != nil {
-		log.Fatalf("Failed to start MySQL: %s", err)
-	}
+// 	redisC, err := setupRedis()
+// 	if err != nil {
+// 		log.Fatalf("Failed to start Redis: %s", err)
+// 	}
+// 	mysqlC, err := setupMySQL()
+// 	if err != nil {
+// 		log.Fatalf("Failed to start MySQL: %s", err)
+// 	}
 
-	// Get the connection details for each service
-	redisHost, _ := redisC.Host(ctx)
-	redisPort, _ := redisC.MappedPort(ctx, "6379")
-	mysqlHost, _ := mysqlC.Host(ctx)
-	mysqlPort, _ := mysqlC.MappedPort(ctx, "3306")
+// 	// Get the connection details for each service
+// 	redisHost, _ := redisC.Host(ctx)
+// 	redisPort, _ := redisC.MappedPort(ctx, "6379")
+// 	mysqlHost, _ := mysqlC.Host(ctx)
+// 	mysqlPort, _ := mysqlC.MappedPort(ctx, "3306")
 
-	// Set the configurations for the testApp
-	zephyrix.TestConfig = &zephyrix.Config{
-		Database: zephyrix.DatabaseConfig{
-			Pools: []zephyrix.DatabasePoolConfig{
-				{
-					Name: "default",
-					DSN:  "root:password@tcp(" + mysqlHost + ":" + mysqlPort.Port() + ")/testdb",
-					Cache: zephyrix.CacheConfig{
-						Enabled: true,
-						Size:    100,
-					},
-					Redis: zephyrix.RedisConfig{
-						Enabled:  true,
-						Address:  redisHost + ":" + redisPort.Port(),
-						Username: "",
-						Password: "",
-						DB:       0,
-					},
-				},
-			},
-		},
-	}
+// 	// Set the configurations for the testApp
+// 	TestConfig = &Config{
+// 		Database: DatabaseConfig{
+// 			Pools: []DatabasePoolConfig{
+// 				{
+// 					Name: "default",
+// 					DSN:  "root:password@tcp(" + mysqlHost + ":" + mysqlPort.Port() + ")/testdb",
+// 					Cache: CacheConfig{
+// 						Enabled: true,
+// 						Size:    100,
+// 					},
+// 					Redis: RedisConfig{
+// 						Enabled:  true,
+// 						Address:  redisHost + ":" + redisPort.Port(),
+// 						Username: "",
+// 						Password: "",
+// 						DB:       0,
+// 					},
+// 				},
+// 			},
+// 		},
+// 	}
 
-	// Initialize testApp with the configurations
-	testApp = zephyrix.NewApplication()
+// 	// Initialize testApp with the configurations
+// 	testApp = NewApplication()
 
-	// Run the tests
-	exitCode := m.Run()
+// 	// Run the tests
+// 	exitCode := m.Run()
 
-	// Clean up
-	if err := testApp.Stop(); err != nil {
-		log.Printf("Error during cleanup: %s", err)
-	}
+// 	// Clean up
+// 	if err := testApp.Stop(); err != nil {
+// 		log.Printf("Error during cleanup: %s", err)
+// 	}
 
-	err = redisC.Terminate(ctx)
-	if err != nil {
-		log.Printf("Error during cleanup (failed to kill redis): %s (%s)", err, redisC.GetContainerID())
-	}
-	err = mysqlC.Terminate(ctx)
-	if err != nil {
-		log.Printf("Error during cleanup (failed to kill mysql): %s (%s)", err, mysqlC.GetContainerID())
-	}
-	// Exit with the status code from the test run
-	os.Exit(exitCode)
-}
+// 	err = redisC.Terminate(ctx)
+// 	if err != nil {
+// 		log.Printf("Error during cleanup (failed to kill redis): %s (%s)", err, redisC.GetContainerID())
+// 	}
+// 	err = mysqlC.Terminate(ctx)
+// 	if err != nil {
+// 		log.Printf("Error during cleanup (failed to kill mysql): %s (%s)", err, mysqlC.GetContainerID())
+// 	}
+// 	// Exit with the status code from the test run
+// 	os.Exit(exitCode)
+// }

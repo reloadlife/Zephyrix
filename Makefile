@@ -40,6 +40,10 @@ git-tag-major:  ## Push new tag to repository with major number incremented
 help: ## Display this help message
 	@awk 'BEGIN {FS = ":.*?## "}; /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
+
+test: ## Run a test pattern
+	@go test -v -timeout 30s -run 
+
 # Allow passing arguments to make run
 %:
 	@:

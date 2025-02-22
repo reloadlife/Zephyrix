@@ -84,9 +84,9 @@ func main() {
 	app.RegisterMiddleware(newMwHandler)
 
 	app.Router().Group(func(router zephyrix.Router) {
-		router.GET("/", func(c *gin.Context) {
-			c.JSON(200, "Hello, World!")
-		})
+		// router.GET("/", func(c *gin.Context) {
+		// 	c.JSON(200, "Hello, World!")
+		// })
 		router.Group(func(router zephyrix.Router) {
 			router.GET("/", func(z zephyrix.Context) {
 				z.JSON(200, "Hello, World! from /test")
